@@ -1,7 +1,29 @@
 ﻿import 'package:flutter/material.dart';
+import 'package:pesa_planner/core/theme/app_colors.dart';
+import 'package:pesa_planner/services/auth_service.dart';
+import 'package:provider/provider.dart';
 
-class LoginScreen extends StatelessWidget {
+class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
+
+  @override
+  State<LoginScreen> createState() => _LoginScreenState();
+}
+
+class _LoginScreenState extends State<LoginScreen> {
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
+  bool _isLoading = false;
+
+  Future<void> _signIn() async {
+    setState(() => _isLoading = true);
+    final auth = Provider.of<AuthService>(context, listen: false);
+    await auth.signInWithEmail(
+      _emailController.text.trim(),
+      _passwordController.text.trim(),
+    );
+    setState(() => _isLoading = false);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -15,13 +37,16 @@ class LoginScreen extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
+            Image.asset('assets/mpesa_logo.png', height: 80),
+            const SizedBox(height: 20),
             Text(
               'Manage Your Finances the Kenyan Way',
-              style: Theme.of(context).textTheme.titleLarge,
+              style: Theme.of(context).textTheme.headline6,
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 40),
             TextField(
+              controller: _emailController,
               decoration: InputDecoration(
                 labelText: 'Email',
                 prefixIcon: const Icon(Icons.email),
@@ -32,6 +57,7 @@ class LoginScreen extends StatelessWidget {
             ),
             const SizedBox(height: 20),
             TextField(
+              controller: _passwordController,
               obscureText: true,
               decoration: InputDecoration(
                 labelText: 'Password',
@@ -43,7 +69,7 @@ class LoginScreen extends StatelessWidget {
             ),
             const SizedBox(height: 30),
             ElevatedButton(
-              onPressed: () {},
+              onPressed: _isLoading ? null : _signIn,
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.kenyaGreen,
                 minimumSize: const Size(double.infinity, 50),
@@ -51,9 +77,28 @@ class LoginScreen extends StatelessWidget {
                   borderRadius: BorderRadius.circular(10),
                 ),
               ),
-              child: const Text('LOGIN'),
+              child: _isLoading
+                  ? const CircularProgressIndicator(color: Colors.white)
+                  : const Text('LOGIN'),
             ),
             TextButton(onPressed: () {}, child: const Text('Create Account')),
+            const Divider(height: 40),
+            TextButton(
+              onPressed: () {
+                Navigator.pushNamed(context, '/phone-verify');
+              },
+              style: TextButton.styleFrom(
+                foregroundColor: AppColors.kenyaGreen,
+              ),
+              child: const Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.phone),
+                  SizedBox(width: 10),
+                  Text('Login with M-PESA Phone'),
+                ],
+              ),
+            ),
           ],
         ),
       ),
@@ -61,8 +106,6 @@ class LoginScreen extends StatelessWidget {
   }
 }
 
-class AppColors {
-  static const Color kenyaGreen = Color(
-    0xFF008000,
-  ); // Replace with your desired green color
+extension on TextTheme {
+  Null get headline6 => null;
 }
