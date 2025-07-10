@@ -1,5 +1,4 @@
 ﻿import 'package:flutter/material.dart';
-import 'package:pesa_planner/features/auth/presentation/screens/login_screen.dart';
 // Make sure that the LoginScreen class is defined as 'class LoginScreen extends StatelessWidget' and exported in the imported file.
 
 class AppRouter {
@@ -14,5 +13,14 @@ class AppRouter {
           ),
         );
     }
+  }
+}
+
+class LoginScreen extends StatelessWidget {
+  const LoginScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(body: Center(child: Text('Login Screen')));
   }
 }
