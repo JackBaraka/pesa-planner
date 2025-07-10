@@ -1,5 +1,4 @@
 ﻿import 'package:flutter/material.dart';
-import 'package:pesa_planner/core/theme/app_theme.dart';
 
 class PhoneVerifyScreen extends StatelessWidget {
   const PhoneVerifyScreen({super.key});
@@ -44,4 +43,10 @@ class PhoneVerifyScreen extends StatelessWidget {
       ),
     );
   }
+}
+
+class AppColors {
+  static const Color kenyaGreen = Color(
+    0xFF00843D,
+  ); // Replace with your desired color value
 }

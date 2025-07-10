@@ -1,5 +1,4 @@
 ﻿import 'package:flutter/material.dart';
-import 'package:pesa_planner/core/theme/app_theme.dart';
 
 class LoginScreen extends StatelessWidget {
   const LoginScreen({super.key});
@@ -18,7 +17,7 @@ class LoginScreen extends StatelessWidget {
           children: [
             Text(
               'Manage Your Finances the Kenyan Way',
-              style: Theme.of(context).textTheme.headline6,
+              style: Theme.of(context).textTheme.titleLarge,
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 40),
@@ -60,4 +59,10 @@ class LoginScreen extends StatelessWidget {
       ),
     );
   }
+}
+
+class AppColors {
+  static const Color kenyaGreen = Color(
+    0xFF008000,
+  ); // Replace with your desired green color
 }
