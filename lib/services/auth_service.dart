@@ -11,7 +11,6 @@ class AuthService {
       );
       return result.user;
     } catch (e) {
-      print("Sign-in error: $e");
       return null;
     }
   }
