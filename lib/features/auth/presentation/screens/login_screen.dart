@@ -14,15 +14,28 @@ class _LoginScreenState extends State<LoginScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _isLoading = false;
+  String? _errorMessage;
 
   Future<void> _signIn() async {
-    setState(() => _isLoading = true);
-    final auth = Provider.of<AuthService>(context, listen: false);
-    await auth.signInWithEmail(
-      _emailController.text.trim(),
-      _passwordController.text.trim(),
-    );
-    setState(() => _isLoading = false);
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+    try {
+      final auth = Provider.of<AuthService>(context, listen: false);
+      await auth.signInWithEmail(
+        _emailController.text.trim(),
+        _passwordController.text.trim(),
+      );
+      // Navigate to home or dashboard if successful, e.g.:
+      // Navigator.pushReplacementNamed(context, '/home');
+    } catch (e) {
+      setState(() {
+        _errorMessage = "Login failed: ${e.toString()}";
+      });
+    } finally {
+      setState(() => _isLoading = false);
+    }
   }
 
   @override
@@ -41,10 +54,19 @@ class _LoginScreenState extends State<LoginScreen> {
             const SizedBox(height: 20),
             Text(
               'Manage Your Finances the Kenyan Way',
-              style: Theme.of(context).textTheme.headline6,
+              style: Theme.of(context).textTheme.headlineSmall,
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 40),
+            if (_errorMessage != null)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 12.0),
+                child: Text(
+                  _errorMessage!,
+                  style: const TextStyle(color: Colors.red),
+                  textAlign: TextAlign.center,
+                ),
+              ),
             TextField(
               controller: _emailController,
               decoration: InputDecoration(
@@ -81,7 +103,12 @@ class _LoginScreenState extends State<LoginScreen> {
                   ? const CircularProgressIndicator(color: Colors.white)
                   : const Text('LOGIN'),
             ),
-            TextButton(onPressed: () {}, child: const Text('Create Account')),
+            TextButton(
+              onPressed: () {
+                Navigator.pushNamed(context, '/register');
+              },
+              child: const Text('Create Account'),
+            ),
             const Divider(height: 40),
             TextButton(
               onPressed: () {
@@ -104,8 +131,4 @@ class _LoginScreenState extends State<LoginScreen> {
       ),
     );
   }
-}
-
-extension on TextTheme {
-  Null get headline6 => null;
 }
