@@ -16,26 +16,28 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _isLoading = false;
   String? _errorMessage;
 
- // In the _signIn method:
-Future<void> _signIn() async {
-  setState(() => _isLoading = true);
-  
-  // Use this to access AuthService
-  final auth = Provider.of<AuthService>(context, listen: false);
-  
-  await auth.signInWithEmail(
-    _emailController.text.trim(),
-    _passwordController.text.trim(),
-  );
-  
-  setState(() => _isLoading = false);
-}
+  Future<void> _signIn() async {
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
 
-// In the Google sign-in button:
-onPressed: () async {
-  final auth = Provider.of<AuthService>(context, listen: false);
-  await auth.signInWithGoogle();
-},
+    final auth = Provider.of<AuthService>(context, listen: false);
+    final error = await auth.signInWithEmail(
+      _emailController.text.trim(),
+      _passwordController.text.trim(),
+    );
+
+    if (error != null) {
+      setState(() {
+        _errorMessage = error;
+        _isLoading = false;
+      });
+      return;
+    }
+
+    setState(() => _isLoading = false);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -49,8 +51,9 @@ onPressed: () async {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Image.asset('assets/mpesa_logo.png', height: 80),
-            const SizedBox(height: 20),
+            // Use your actual asset path or remove if not available
+            // Image.asset('assets/images/mpesa_logo.png', height: 80),
+            // const SizedBox(height: 20),
             Text(
               'Manage Your Finances the Kenyan Way',
               style: Theme.of(context).textTheme.headlineSmall,
