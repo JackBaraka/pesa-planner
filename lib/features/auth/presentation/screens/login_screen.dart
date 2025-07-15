@@ -16,27 +16,26 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _isLoading = false;
   String? _errorMessage;
 
-  Future<void> _signIn() async {
-    setState(() {
-      _isLoading = true;
-      _errorMessage = null;
-    });
-    try {
-      final auth = Provider.of<AuthService>(context, listen: false);
-      await auth.signInWithEmail(
-        _emailController.text.trim(),
-        _passwordController.text.trim(),
-      );
-      // Navigate to home or dashboard if successful, e.g.:
-      // Navigator.pushReplacementNamed(context, '/home');
-    } catch (e) {
-      setState(() {
-        _errorMessage = "Login failed: ${e.toString()}";
-      });
-    } finally {
-      setState(() => _isLoading = false);
-    }
-  }
+ // In the _signIn method:
+Future<void> _signIn() async {
+  setState(() => _isLoading = true);
+  
+  // Use this to access AuthService
+  final auth = Provider.of<AuthService>(context, listen: false);
+  
+  await auth.signInWithEmail(
+    _emailController.text.trim(),
+    _passwordController.text.trim(),
+  );
+  
+  setState(() => _isLoading = false);
+}
+
+// In the Google sign-in button:
+onPressed: () async {
+  final auth = Provider.of<AuthService>(context, listen: false);
+  await auth.signInWithGoogle();
+},
 
   @override
   Widget build(BuildContext context) {
