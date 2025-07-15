@@ -9,12 +9,16 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
+  // Initialize Firebase
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+
   runApp(
     MultiProvider(
       providers: [
         Provider<AuthService>(create: (_) => AuthService()),
         // Add other providers here if needed
       ],
+
       child: const AppWidget(),
     ),
   );

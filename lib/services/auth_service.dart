@@ -87,4 +87,14 @@ class AuthService {
       // Optionally rethrow or handle error
     }
   }
+  // Add this to notify listeners when auth state changes
+  void _authStateChanged(User? user) {
+    notifyListeners();
+  }
+  
+  // Initialize listener in constructor
+  AuthService() {
+    _auth.authStateChanges().listen(_authStateChanged);
+  }
+}
 }
