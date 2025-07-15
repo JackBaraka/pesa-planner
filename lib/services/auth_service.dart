@@ -1,6 +1,8 @@
 ﻿import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart'; // Add this import
 
-class AuthService {
+class AuthService with ChangeNotifier {
+  // Add ChangeNotifier mixin
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
   // Email sign-up with error message return
@@ -83,18 +85,22 @@ class AuthService {
   Future<void> signOut() async {
     try {
       await _auth.signOut();
+      notifyListeners(); // Notify listeners after sign out
     } catch (e) {
       // Optionally rethrow or handle error
     }
   }
+
   // Add this to notify listeners when auth state changes
   void _authStateChanged(User? user) {
     notifyListeners();
   }
-  
+
   // Initialize listener in constructor
   AuthService() {
     _auth.authStateChanges().listen(_authStateChanged);
   }
-}
+
+  // Helper to get current user
+  User? get currentUser => _auth.currentUser;
 }
