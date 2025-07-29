@@ -132,7 +132,7 @@ class BudgetListScreen extends StatelessWidget {
             child: const Text('Cancel'),
           ),
           TextButton(
-            onPressed: () {
+            onPressed: () async {
               Provider.of<DatabaseService>(
                 context,
                 listen: false,
