@@ -176,7 +176,7 @@ class _TransportCalculatorScreenState extends State<TransportCalculatorScreen> {
                 ),
               ],
             ),
-            if (_selectedRoute?.bodaFare > 0)
+            if (_selectedRoute!.bodaFare > 0)
               ListTile(
                 title: const Text('Boda Boda'),
                 leading: Radio(
