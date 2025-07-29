@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
+// ignore: depend_on_referenced_packages
 import 'package:fl_chart/fl_chart.dart';
 import 'package:pesa_planner/core/theme/app_colors.dart';
 import 'package:pesa_planner/core/utils/currency_formatter.dart';
-import 'package:pesa_planner/data/models/expense_model.dart';
 import 'package:pesa_planner/services/auth_service.dart';
 import 'package:pesa_planner/services/expense_service.dart';
 import 'package:provider/provider.dart';
