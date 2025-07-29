@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:pesa_planner/core/theme/app_colors.dart';
-import 'package:pesa_planner/core/routes/route_names.dart';
+import 'package:pesa_planner/services/auth_service.dart' show AuthService;
+import 'package:provider/provider.dart' show Provider;
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
