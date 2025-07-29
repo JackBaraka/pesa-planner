@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:pesa_planner/core/theme/app_colors.dart';
-import 'package:pesa_planner/core/utils/currency_formatter.dart';
 import 'package:pesa_planner/data/models/budget_model.dart';
+import 'package:pesa_planner/services/auth_service.dart';
 import 'package:pesa_planner/services/database_service.dart';
 import 'package:provider/provider.dart';
 
@@ -39,9 +39,9 @@ class _BudgetCreationScreenState extends State<BudgetCreationScreen> {
 
   Future<void> _createBudget(BuildContext context) async {
     if (_nameController.text.isEmpty || _amountController.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please fill all fields')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Please fill all fields')));
       return;
     }
 
@@ -54,10 +54,16 @@ class _BudgetCreationScreenState extends State<BudgetCreationScreen> {
       endDate: _endDate,
     );
 
-    final userId = Provider.of<AuthService>(context, listen: false).currentUser?.uid;
+    final userId = Provider.of<AuthService>(
+      context,
+      listen: false,
+    ).currentUser?.uid;
     if (userId != null) {
-      await Provider.of<DatabaseService>(context, listen: false)
-          .addBudget(userId, budget);
+      await Provider.of<DatabaseService>(
+        context,
+        listen: false,
+      ).addBudget(userId, budget);
+      // ignore: use_build_context_synchronously
       Navigator.pop(context);
     }
   }
@@ -95,10 +101,7 @@ class _BudgetCreationScreenState extends State<BudgetCreationScreen> {
             DropdownButtonFormField<String>(
               value: _selectedCategory,
               items: Budget.kenyanCategories.map((category) {
-                return DropdownMenuItem(
-                  value: category,
-                  child: Text(category),
-                );
+                return DropdownMenuItem(value: category, child: Text(category));
               }).toList(),
               onChanged: (value) {
                 if (value != null) {
@@ -117,7 +120,9 @@ class _BudgetCreationScreenState extends State<BudgetCreationScreen> {
                 Expanded(
                   child: ListTile(
                     title: const Text('Start Date'),
-                    subtitle: Text('${_startDate.day}/${_startDate.month}/${_startDate.year}'),
+                    subtitle: Text(
+                      '${_startDate.day}/${_startDate.month}/${_startDate.year}',
+                    ),
                     trailing: IconButton(
                       icon: const Icon(Icons.calendar_today),
                       onPressed: () => _selectDate(context, true),
@@ -127,7 +132,9 @@ class _BudgetCreationScreenState extends State<BudgetCreationScreen> {
                 Expanded(
                   child: ListTile(
                     title: const Text('End Date'),
-                    subtitle: Text('${_endDate.day}/${_endDate.month}/${_endDate.year}'),
+                    subtitle: Text(
+                      '${_endDate.day}/${_endDate.month}/${_endDate.year}',
+                    ),
                     trailing: IconButton(
                       icon: const Icon(Icons.calendar_today),
                       onPressed: () => _selectDate(context, false),
