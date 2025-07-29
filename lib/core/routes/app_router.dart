@@ -10,6 +10,12 @@ import 'package:pesa_planner/features/expenses/presentation/screens/expense_dash
     show ExpenseDashboard;
 import 'package:pesa_planner/features/expenses/presentation/screens/expense_list_screen.dart'
     show ExpenseListScreen;
+import 'package:pesa_planner/features/transport/presentation/screens/saved_routes_screen.dart'
+    show SavedRoutesScreen;
+import 'package:pesa_planner/features/transport/presentation/screens/transport_calculator_screen.dart'
+    show TransportCalculatorScreen;
+import 'package:pesa_planner/features/transport/presentation/screens/transport_dashboard.dart'
+    show TransportDashboard;
 
 class AppRouter {
   static Route<dynamic> generateRoute(RouteSettings settings) {
@@ -32,6 +38,15 @@ class AppRouter {
         return MaterialPageRoute(builder: (_) => const AddExpenseScreen());
       case '/expense-dashboard':
         return MaterialPageRoute(builder: (_) => const ExpenseDashboard());
+      // Add these routes to your existing AppRouter class
+      case '/transport-calculator':
+        return MaterialPageRoute(
+          builder: (_) => const TransportCalculatorScreen(),
+        );
+      case '/saved-routes':
+        return MaterialPageRoute(builder: (_) => const SavedRoutesScreen());
+      case '/transport-dashboard':
+        return MaterialPageRoute(builder: (_) => const TransportDashboard());
       default:
         return MaterialPageRoute(
           builder: (_) => Scaffold(
