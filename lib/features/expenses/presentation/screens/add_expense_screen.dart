@@ -113,7 +113,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                         value: subCat,
                         child: Text(subCat),
                       );
-                    }).toList(),
+                    }),
                   ],
                   onChanged: (value) {
                     setState(() => _selectedSubCategory = value);
@@ -134,10 +134,12 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                   prefixIcon: Icon(Icons.attach_money),
                 ),
                 validator: (value) {
-                  if (value == null || value.isEmpty)
+                  if (value == null || value.isEmpty) {
                     return 'Please enter amount';
-                  if (double.tryParse(value) == null)
+                  }
+                  if (double.tryParse(value) == null) {
                     return 'Enter valid number';
+                  }
                   return null;
                 },
               ),
