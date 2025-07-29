@@ -28,7 +28,8 @@ class ExpenseService {
 
     return query.snapshots().map((snapshot) {
       return snapshot.docs.map((doc) {
-        return Expense.fromMap(doc.data());
+        final data = doc.data() as Map<String, dynamic>;
+        return Expense.fromMap(data);
       }).toList();
     });
   }
@@ -51,7 +52,8 @@ class ExpenseService {
 
     Map<String, double> summary = {};
     for (var doc in snapshot.docs) {
-      final expense = Expense.fromMap(doc.data());
+      final data = doc.data();
+      final expense = Expense.fromMap(data);
       summary[expense.category] =
           (summary[expense.category] ?? 0) + expense.amount;
     }
