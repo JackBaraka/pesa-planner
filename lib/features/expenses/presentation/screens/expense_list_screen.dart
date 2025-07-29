@@ -195,7 +195,7 @@ class _ExpenseListScreenState extends State<ExpenseListScreen> {
                     value: category,
                     child: Text(category),
                   );
-                }).toList(),
+                }),
               ],
               onChanged: (value) {
                 setState(() => _selectedCategory = value);
