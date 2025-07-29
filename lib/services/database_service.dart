@@ -8,4 +8,8 @@ class DatabaseService {
   }
 
   Future<void> addBudget(String userId, Budget budget) async {}
+
+  void getBudgets(String userId) {}
+
+  void deleteBudget(String userId, String budgetId) {}
 }

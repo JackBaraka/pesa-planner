@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:pesa_planner/core/theme/app_colors.dart';
 import 'package:pesa_planner/core/utils/currency_formatter.dart';
 import 'package:pesa_planner/data/models/budget_model.dart';
+import 'package:pesa_planner/features/budget/presentation/screens/budget_creation_screen.dart';
 import 'package:pesa_planner/services/auth_service.dart';
 import 'package:pesa_planner/services/database_service.dart';
 import 'package:provider/provider.dart';
@@ -11,7 +12,7 @@ class BudgetListScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final userId = Provider.of<AuthService>(context)?.currentUser?.uid;
+    final userId = Provider.of<AuthService>(context).currentUser?.uid;
     if (userId == null) {
       return const Scaffold(
         body: Center(child: Text('Please log in to view budgets')),
