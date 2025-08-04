@@ -12,12 +12,21 @@ class BudgetListScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final userId = Provider.of<AuthService>(context).currentUser?.uid;
-    if (userId == null) {
+    final authService = Provider.of<AuthService>(context);
+
+    // Show loading while auth is initializing
+    if (!authService.isInitialized) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
+
+    // Redirect to login if not authenticated
+    if (authService.currentUser == null) {
       return const Scaffold(
         body: Center(child: Text('Please log in to view budgets')),
       );
     }
+
+    final userId = authService.currentUser!.uid;
 
     return Scaffold(
       appBar: AppBar(
@@ -146,3 +155,5 @@ class BudgetListScreen extends StatelessWidget {
     );
   }
 }
+import 'package:pesa_planner/core/routes/app_router.dart';
+import 'package:pesa_planner/core/theme/app_theme.dart';  
