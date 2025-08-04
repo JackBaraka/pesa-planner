@@ -85,4 +85,5 @@ class DefaultFirebaseOptions {
     storageBucket: 'pesa-planner.firebasestorage.app',
     measurementId: 'G-CB9F5586SF',
   );
+
 }
