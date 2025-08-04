@@ -11,17 +11,24 @@ class AppWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
       create: (context) => AuthService(),
-      child: MaterialApp(
-        title: 'Pesa Planner',
-        theme: kenyanTheme,
-        debugShowCheckedModeBanner: false,
-        initialRoute: '/',
-        onGenerateRoute: AppRouter.generateRoute,
-        // Add this builder to ensure proper context
-        builder: (context, child) {
-          return MediaQuery(
-            data: MediaQuery.of(context).copyWith(textScaleFactor: 1.0),
-            child: child!,
+      child: Consumer<AuthService>(
+        builder: (context, auth, child) {
+          return StreamProvider<AppUser?>(
+            create: (context) => auth.user,
+            initialData: null,
+            child: MaterialApp(
+              title: 'Pesa Planner',
+              theme: kenyanTheme,
+              debugShowCheckedModeBanner: false,
+              initialRoute: '/',
+              onGenerateRoute: AppRouter.generateRoute,
+              builder: (context, child) {
+                return MediaQuery(
+                  data: MediaQuery.of(context).copyWith(textScaleFactor: 1.0),
+                  child: child!,
+                );
+              },
+            ),
           );
         },
       ),
