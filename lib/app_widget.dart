@@ -1,6 +1,7 @@
 ﻿import 'package:flutter/material.dart';
 import 'package:pesa_planner/core/routes/app_router.dart';
 import 'package:pesa_planner/core/theme/app_theme.dart';
+import 'package:pesa_planner/data/models/user_model.dart';
 import 'package:pesa_planner/services/auth_service.dart';
 import 'package:provider/provider.dart';
 

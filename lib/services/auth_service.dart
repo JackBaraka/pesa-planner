@@ -103,4 +103,6 @@ class AuthService with ChangeNotifier {
 
   // Helper to get current user
   User? get currentUser => _auth.currentUser;
+
+  Null get user => null;
 }
