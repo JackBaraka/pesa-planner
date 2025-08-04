@@ -43,8 +43,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
       return;
     }
 
-    setState(() => _isLoading = false);
-    Navigator.pop(context); // Return to login after successful registration
+    // Navigate to home after successful registration
+    Navigator.pushReplacementNamed(context, '/');
   }
 
   @override
