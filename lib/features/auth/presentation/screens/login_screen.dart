@@ -36,7 +36,8 @@ class _LoginScreenState extends State<LoginScreen> {
       return;
     }
 
-    setState(() => _isLoading = false);
+    // Navigate to home after successful login
+    Navigator.pushReplacementNamed(context, '/');
   }
 
   @override
@@ -51,12 +52,11 @@ class _LoginScreenState extends State<LoginScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // Use your actual asset path or remove if not available
-            // Image.asset('assets/images/mpesa_logo.png', height: 80),
-            // const SizedBox(height: 20),
-            Text(
+            const Icon(Icons.money, size: 80, color: Color(0xFF006600)),
+            const SizedBox(height: 20),
+            const Text(
               'Manage Your Finances the Kenyan Way',
-              style: Theme.of(context).textTheme.headlineSmall,
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 40),
@@ -78,6 +78,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   borderRadius: BorderRadius.circular(10),
                 ),
               ),
+              keyboardType: TextInputType.emailAddress,
             ),
             const SizedBox(height: 20),
             TextField(
@@ -124,7 +125,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 children: [
                   Icon(Icons.phone),
                   SizedBox(width: 10),
-                  Text('Login with M-PESA Phone'),
+                  Text('Login with Phone Number'),
                 ],
               ),
             ),
