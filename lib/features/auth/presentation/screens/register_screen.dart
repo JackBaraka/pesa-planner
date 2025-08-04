@@ -40,11 +40,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
         _errorMessage = error;
         _isLoading = false;
       });
-      return;
     }
-
-    // Navigate to home after successful registration
-    Navigator.pushReplacementNamed(context, '/');
+    // Successful registration handled by AppWidget
   }
 
   @override
