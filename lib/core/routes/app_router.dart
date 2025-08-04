@@ -12,7 +12,8 @@ import 'package:pesa_planner/features/kplc/presentation/screens/kplc_bill_screen
 import 'package:pesa_planner/features/transport/presentation/screens/saved_routes_screen.dart';
 import 'package:pesa_planner/features/transport/presentation/screens/transport_calculator_screen.dart';
 import 'package:pesa_planner/features/transport/presentation/screens/transport_dashboard.dart';
-import 'package:pesa_planner/features/transport/presentation/screens/transport_screen.dart'; // Added import
+import 'package:pesa_planner/features/transport/presentation/screens/transport_screen.dart';
+import 'package:pesa_planner/features/utilities/presentation/screens/kplc_bill_screen.dart'; // Added import
 
 class AppRouter {
   static Route<dynamic> generateRoute(RouteSettings settings) {
