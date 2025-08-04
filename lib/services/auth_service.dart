@@ -132,4 +132,6 @@ class AuthService with ChangeNotifier {
       );
     });
   }
+
+  bool? get isInitialized => null;
 }

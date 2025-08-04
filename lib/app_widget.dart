@@ -1,6 +1,10 @@
 ﻿import 'package:flutter/material.dart';
 import 'package:pesa_planner/core/routes/app_router.dart';
 import 'package:pesa_planner/core/theme/app_theme.dart';
+import 'package:pesa_planner/features/auth/presentation/screens/login_screen.dart'
+    show LoginScreen;
+import 'package:pesa_planner/features/dashboard/home_screen.dart'
+    show HomeScreen;
 import 'package:pesa_planner/services/auth_service.dart';
 import 'package:provider/provider.dart';
 
@@ -16,7 +20,7 @@ class AppWidget extends StatelessWidget {
           // Handle authentication state
           Widget homeScreen;
 
-          if (!authService.isInitialized) {
+          if (!(authService.isInitialized ?? false)) {
             // Show splash screen while initializing
             homeScreen = const SplashScreen();
           } else if (authService.currentUser == null) {
