@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:pesa_planner/core/theme/app_colors.dart';
 import 'package:pesa_planner/core/utils/currency_formatter.dart';
 import 'package:pesa_planner/data/models/transport_model.dart';
-import 'package:provider/provider.dart';
 
 class TransportScreen extends StatefulWidget {
   const TransportScreen({super.key});
@@ -39,7 +38,9 @@ class _TransportScreenState extends State<TransportScreen> {
 
   void _toggleFavorite(TransportRoute route) {
     setState(() {
-      final index = TransportRoute.kenyanRoutes.indexWhere((r) => r.id == route.id);
+      final index = TransportRoute.kenyanRoutes.indexWhere(
+        (r) => r.id == route.id,
+      );
       if (index != -1) {
         TransportRoute.kenyanRoutes[index] = route.copyWith(
           isFavorite: !route.isFavorite,
@@ -95,7 +96,11 @@ class _TransportScreenState extends State<TransportScreen> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.directions_off, size: 60, color: Colors.grey),
+                        Icon(
+                          Icons.directions_off,
+                          size: 60,
+                          color: Colors.grey,
+                        ),
                         SizedBox(height: 16),
                         Text('No routes found'),
                         Text('Try a different search term'),
@@ -118,11 +123,7 @@ class _TransportScreenState extends State<TransportScreen> {
     final isSelected = _selectedRouteType == label.toLowerCase();
     return ChoiceChip(
       label: Row(
-        children: [
-          Icon(icon, size: 18),
-          const SizedBox(width: 4),
-          Text(label),
-        ],
+        children: [Icon(icon, size: 18), const SizedBox(width: 4), Text(label)],
       ),
       selected: isSelected,
       selectedColor: AppColors.kenyaGreen.withOpacity(0.2),
@@ -286,8 +287,16 @@ class _TransportScreenState extends State<TransportScreen> {
               _buildDetailRow('Origin', route.origin),
               _buildDetailRow('Destination', route.destination),
               const Divider(height: 30),
-              _buildFareDetail('Matatu Fare', route.matatuFare, Icons.directions_bus),
-              _buildFareDetail('Uber/Bolt Fare', route.uberFare, Icons.directions_car),
+              _buildFareDetail(
+                'Matatu Fare',
+                route.matatuFare,
+                Icons.directions_bus,
+              ),
+              _buildFareDetail(
+                'Uber/Bolt Fare',
+                route.uberFare,
+                Icons.directions_car,
+              ),
               _buildFareDetail('Boda Fare', route.bodaFare, Icons.motorcycle),
               const SizedBox(height: 20),
               Row(
@@ -298,16 +307,24 @@ class _TransportScreenState extends State<TransportScreen> {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.grey[300],
                     ),
-                    child: const Text('Close', style: TextStyle(color: Colors.black)),
+                    child: const Text(
+                      'Close',
+                      style: TextStyle(color: Colors.black),
+                    ),
+                  ),
                   ElevatedButton(
                     onPressed: () {
                       // Implement navigation to expense tracking
                       Navigator.pop(context);
-                      Navigator.pushNamed(context, '/add-expense', arguments: {
-                        'category': 'Transport',
-                        'subCategory': route.name,
-                        'amount': route.matatuFare,
-                      });
+                      Navigator.pushNamed(
+                        context,
+                        '/add-expense',
+                        arguments: {
+                          'category': 'Transport',
+                          'subCategory': route.name,
+                          'amount': route.matatuFare,
+                        },
+                      );
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.kenyaGreen,
@@ -333,6 +350,7 @@ class _TransportScreenState extends State<TransportScreen> {
             child: Text(
               '$label:',
               style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
           ),
           Expanded(child: Text(value)),
         ],
@@ -423,12 +441,12 @@ class _TransportScreenState extends State<TransportScreen> {
                   uberFare: double.tryParse(uberController.text) ?? 0,
                   bodaFare: double.tryParse(bodaController.text) ?? 0,
                 );
-                
+
                 setState(() {
                   TransportRoute.kenyanRoutes.add(newRoute);
                   _filterRoutes(_searchQuery);
                 });
-                
+
                 Navigator.pop(context);
               },
               style: ElevatedButton.styleFrom(

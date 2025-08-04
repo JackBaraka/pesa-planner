@@ -86,4 +86,17 @@ class TransportRoute {
       bodaFare: 200.0,
     ),
   ];
+
+  TransportRoute copyWith({required bool isFavorite}) {
+    return TransportRoute(
+      id: id,
+      name: name,
+      origin: origin,
+      destination: destination,
+      matatuFare: matatuFare,
+      uberFare: uberFare,
+      bodaFare: bodaFare,
+      isFavorite: isFavorite,
+    );
+  }
 }
