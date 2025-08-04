@@ -33,11 +33,8 @@ class _LoginScreenState extends State<LoginScreen> {
         _errorMessage = error;
         _isLoading = false;
       });
-      return;
     }
-
-    // Navigate to home after successful login
-    Navigator.pushReplacementNamed(context, '/');
+    // Successful login handled by AppWidget
   }
 
   @override
