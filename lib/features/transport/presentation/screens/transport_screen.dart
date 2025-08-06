@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:pesa_planner/core/theme/app_colors.dart';
 import 'package:pesa_planner/core/utils/currency_formatter.dart';
 import 'package:pesa_planner/data/models/transport_model.dart';
-import 'package:pesa_planner/services/auth_service.dart';
-import 'package:provider/provider.dart';
 
 class TransportScreen extends StatefulWidget {
   const TransportScreen({super.key});
@@ -15,45 +13,9 @@ class TransportScreen extends StatefulWidget {
 class _TransportScreenState extends State<TransportScreen> {
   // ... your existing state variables ...
 
-  @override
-  Widget build(BuildContext context) {
-    final authService = Provider.of<AuthService>(context);
-
-    if (authService?.isInitialized == false) {
-      return const Scaffold(body: Center(child: CircularProgressIndicator()));
-    }
-
-    if (authService.currentUser == null) {
-      return const Scaffold(
-        body: Center(child: Text('Please log in to view transport options')),
-      );
-    }
-
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Kenyan Transport Costs'),
-        backgroundColor: AppColors.kenyaGreen,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.add_road),
-            onPressed: () => _showAddRouteDialog(context),
-          ),
-        ],
-      ),
-      body: Column(
-        children: [
-          // ... rest of your existing transport screen code ...
-        ],
-      ),
-    );
-  }
-
   void _showAddRouteDialog(BuildContext context) {}
 
   // ... rest of your existing methods ...
-}
-
-class _TransportScreenState extends State<TransportScreen> {
   String _selectedRouteType = 'matatu';
   String _searchQuery = '';
   List<TransportRoute> _filteredRoutes = [];
@@ -409,97 +371,6 @@ class _TransportScreenState extends State<TransportScreen> {
         formatKSH(amount),
         style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
       ),
-    );
-  }
-
-  void _showAddRouteDialog(BuildContext context) {
-    final originController = TextEditingController();
-    final destController = TextEditingController();
-    final matatuController = TextEditingController();
-    final uberController = TextEditingController();
-    final bodaController = TextEditingController();
-
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text('Add New Route'),
-          content: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                TextField(
-                  controller: originController,
-                  decoration: const InputDecoration(
-                    labelText: 'Origin (e.g. Nairobi CBD)',
-                  ),
-                ),
-                TextField(
-                  controller: destController,
-                  decoration: const InputDecoration(
-                    labelText: 'Destination (e.g. Westlands)',
-                  ),
-                ),
-                const SizedBox(height: 16),
-                TextField(
-                  controller: matatuController,
-                  keyboardType: TextInputType.number,
-                  decoration: const InputDecoration(
-                    labelText: 'Matatu Fare (KES)',
-                    prefixIcon: Icon(Icons.directions_bus),
-                  ),
-                ),
-                TextField(
-                  controller: uberController,
-                  keyboardType: TextInputType.number,
-                  decoration: const InputDecoration(
-                    labelText: 'Uber/Bolt Fare (KES)',
-                    prefixIcon: Icon(Icons.directions_car),
-                  ),
-                ),
-                TextField(
-                  controller: bodaController,
-                  keyboardType: TextInputType.number,
-                  decoration: const InputDecoration(
-                    labelText: 'Boda Fare (KES)',
-                    prefixIcon: Icon(Icons.motorcycle),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Cancel'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                final newRoute = TransportRoute(
-                  id: DateTime.now().millisecondsSinceEpoch.toString(),
-                  name: '${originController.text} to ${destController.text}',
-                  origin: originController.text,
-                  destination: destController.text,
-                  matatuFare: double.tryParse(matatuController.text) ?? 0,
-                  uberFare: double.tryParse(uberController.text) ?? 0,
-                  bodaFare: double.tryParse(bodaController.text) ?? 0,
-                );
-
-                setState(() {
-                  TransportRoute.kenyanRoutes.add(newRoute);
-                  _filterRoutes(_searchQuery);
-                });
-
-                Navigator.pop(context);
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.kenyaGreen,
-              ),
-              child: const Text('Add Route'),
-            ),
-          ],
-        );
-      },
     );
   }
 }
