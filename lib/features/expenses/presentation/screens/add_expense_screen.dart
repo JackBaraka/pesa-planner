@@ -22,6 +22,14 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
   DateTime _selectedDate = DateTime.now();
   bool _isRecurring = false;
   bool _isLoading = false;
+  final _formKey = GlobalKey<FormState>();
+  final _amountController = TextEditingController();
+  final _descriptionController = TextEditingController();
+  String _selectedCategory = Expense.kenyanCategories[0];
+  String? _selectedSubCategory;
+  DateTime _selectedDate = DateTime.now();
+  bool _isRecurring = false;
+  bool _isLoading = false;
 
   Future<void> _selectDate(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
