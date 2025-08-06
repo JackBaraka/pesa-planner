@@ -18,13 +18,11 @@ class _TransportScreenState extends State<TransportScreen> {
   @override
   Widget build(BuildContext context) {
     final authService = Provider.of<AuthService>(context);
-    
+
     if (authService?.isInitialized == false) {
-      return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
-      );
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
-    
+
     if (authService.currentUser == null) {
       return const Scaffold(
         body: Center(child: Text('Please log in to view transport options')),
@@ -49,18 +47,10 @@ class _TransportScreenState extends State<TransportScreen> {
       ),
     );
   }
-  
+
+  void _showAddRouteDialog(BuildContext context) {}
+
   // ... rest of your existing methods ...
-}import 'package:flutter/material.dart';
-import 'package:pesa_planner/core/theme/app_colors.dart';
-import 'package:pesa_planner/core/utils/currency_formatter.dart';
-import 'package:pesa_planner/data/models/transport_model.dart';
-
-class TransportScreen extends StatefulWidget {
-  const TransportScreen({super.key});
-
-  @override
-  State<TransportScreen> createState() => _TransportScreenState();
 }
 
 class _TransportScreenState extends State<TransportScreen> {
