@@ -2,6 +2,59 @@ import 'package:flutter/material.dart';
 import 'package:pesa_planner/core/theme/app_colors.dart';
 import 'package:pesa_planner/core/utils/currency_formatter.dart';
 import 'package:pesa_planner/data/models/transport_model.dart';
+import 'package:pesa_planner/services/auth_service.dart';
+import 'package:provider/provider.dart';
+
+class TransportScreen extends StatefulWidget {
+  const TransportScreen({super.key});
+
+  @override
+  State<TransportScreen> createState() => _TransportScreenState();
+}
+
+class _TransportScreenState extends State<TransportScreen> {
+  // ... your existing state variables ...
+
+  @override
+  Widget build(BuildContext context) {
+    final authService = Provider.of<AuthService>(context);
+    
+    if (!authService.isInitialized) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+    
+    if (authService.currentUser == null) {
+      return const Scaffold(
+        body: Center(child: Text('Please log in to view transport options')),
+      );
+    }
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Kenyan Transport Costs'),
+        backgroundColor: AppColors.kenyaGreen,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.add_road),
+            onPressed: () => _showAddRouteDialog(context),
+          ),
+        ],
+      ),
+      body: Column(
+        children: [
+          // ... rest of your existing transport screen code ...
+        ],
+      ),
+    );
+  }
+  
+  // ... rest of your existing methods ...
+}import 'package:flutter/material.dart';
+import 'package:pesa_planner/core/theme/app_colors.dart';
+import 'package:pesa_planner/core/utils/currency_formatter.dart';
+import 'package:pesa_planner/data/models/transport_model.dart';
 
 class TransportScreen extends StatefulWidget {
   const TransportScreen({super.key});
