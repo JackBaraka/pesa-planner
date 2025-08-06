@@ -19,7 +19,7 @@ class _TransportScreenState extends State<TransportScreen> {
   Widget build(BuildContext context) {
     final authService = Provider.of<AuthService>(context);
     
-    if (!authService.isInitialized) {
+    if (authService?.isInitialized == false) {
       return const Scaffold(
         body: Center(child: CircularProgressIndicator()),
       );
