@@ -5,6 +5,7 @@ import 'package:pesa_planner/core/utils/date_utils.dart';
 import 'package:pesa_planner/services/auth_service.dart';
 import 'package:pesa_planner/services/mpesa_service.dart';
 import 'package:provider/provider.dart';
+// ignore: unused_import
 import 'package:intl/intl.dart';
 
 class MpesaTransactionsScreen extends StatefulWidget {
@@ -33,7 +34,7 @@ class _MpesaTransactionsScreenState extends State<MpesaTransactionsScreen> {
     });
 
     try {
-      final authService = Provider.of<AuthService>(context, listen: false);
+      Provider.of<AuthService>(context, listen: false);
       final mpesaService = Provider.of<MpesaService>(context, listen: false);
 
       final transactions = await mpesaService.fetchTransactions(
@@ -56,7 +57,7 @@ class _MpesaTransactionsScreenState extends State<MpesaTransactionsScreen> {
   Widget build(BuildContext context) {
     final authService = Provider.of<AuthService>(context);
 
-    if (!authService.isInitialized) {
+    if (authService.isInitialized == null || !authService.isInitialized!) {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
