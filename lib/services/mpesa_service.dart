@@ -150,7 +150,7 @@ class MpesaService with ChangeNotifier {
       }
 
       // Simulate API call
-      await Future.delapsed(const Duration(seconds: 2));
+      await Future.delayed(const Duration(seconds: 2));
 
       // Return mock response
       return {
