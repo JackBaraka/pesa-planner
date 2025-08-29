@@ -29,7 +29,6 @@ class DatabaseService {
           .orderBy('startDate', descending: true)
           .snapshots()
           .handleError((error) {
-            print('Error fetching budgets: $error');
             return Stream.value([]);
           })
           .map((snapshot) {
@@ -59,7 +58,6 @@ class DatabaseService {
             }).toList();
           });
     } catch (e) {
-      print('Error in getBudgets stream: $e');
       return Stream.value([]);
     }
   }
