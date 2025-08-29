@@ -1,4 +1,6 @@
-﻿import 'package:cloud_firestore/cloud_firestore.dart';
+﻿// ignore_for_file: strict_top_level_inference
+
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
 
 class Budget {
@@ -66,7 +68,9 @@ class Budget {
       description: map['description'],
       isRecurring: map['isRecurring'] ?? false,
       createdAt: (map['createdAt'] as Timestamp).toDate(),
-      updatedAt: map['updatedAt'] != null ? (map['updatedAt'] as Timestamp).toDate() : null,
+      updatedAt: map['updatedAt'] != null
+          ? (map['updatedAt'] as Timestamp).toDate()
+          : null,
     );
   }
 
@@ -125,10 +129,12 @@ class Budget {
   double get remainingAmount => amount - spent;
 
   // Get daily spending allowance remaining
-  double get dailyRemaining => daysRemaining > 0 ? remainingAmount / daysRemaining : 0;
+  double get dailyRemaining =>
+      daysRemaining > 0 ? remainingAmount / daysRemaining : 0;
 
   // Check if budget is active
-  bool get isActive => DateTime.now().isAfter(startDate) && DateTime.now().isBefore(endDate);
+  bool get isActive =>
+      DateTime.now().isAfter(startDate) && DateTime.now().isBefore(endDate);
 
   // Check if budget is completed
   bool get isCompleted => DateTime.now().isAfter(endDate);
@@ -156,7 +162,9 @@ class Budget {
   String get statusColor {
     switch (status) {
       case BudgetStatus.active:
-        return progress > 0.8 ? '#FFA500' : '#4CAF50'; // Orange if >80%, else green
+        return progress > 0.8
+            ? '#FFA500'
+            : '#4CAF50'; // Orange if >80%, else green
       case BudgetStatus.completed:
         return '#4CAF50'; // Green
       case BudgetStatus.exceeded:
@@ -169,9 +177,11 @@ class Budget {
   }
 
   // Format amount with Kenyan currency
-  String get formattedAmount => 'KSh ${NumberFormat('#,##0.00').format(amount)}';
+  String get formattedAmount =>
+      'KSh ${NumberFormat('#,##0.00').format(amount)}';
   String get formattedSpent => 'KSh ${NumberFormat('#,##0.00').format(spent)}';
-  String get formattedRemaining => 'KSh ${NumberFormat('#,##0.00').format(remainingAmount)}';
+  String get formattedRemaining =>
+      'KSh ${NumberFormat('#,##0.00').format(remainingAmount)}';
 
   // Kenyan-specific budget categories
   static const List<String> kenyanCategories = [
@@ -190,10 +200,37 @@ class Budget {
 
   // Kenyan-specific subcategories
   static const Map<String, List<String>> kenyanSubCategories = {
-    'Transport': ['Matatu', 'Boda Boda', 'Uber/Bolt', 'Fuel', 'Parking', 'Taxi'],
-    'Utilities': ['KPLC', 'Nairobi Water', 'Internet', 'Garbage', 'Rent', 'Security'],
-    'M-PESA': ['Send Money', 'Paybill', 'Buy Goods', 'Withdraw', 'Airtime', 'Lipa Na M-PESA'],
-    'Food': ['Groceries', 'Eating Out', 'Market', 'Supermarket', 'Food Delivery'],
+    'Transport': [
+      'Matatu',
+      'Boda Boda',
+      'Uber/Bolt',
+      'Fuel',
+      'Parking',
+      'Taxi',
+    ],
+    'Utilities': [
+      'KPLC',
+      'Nairobi Water',
+      'Internet',
+      'Garbage',
+      'Rent',
+      'Security',
+    ],
+    'M-PESA': [
+      'Send Money',
+      'Paybill',
+      'Buy Goods',
+      'Withdraw',
+      'Airtime',
+      'Lipa Na M-PESA',
+    ],
+    'Food': [
+      'Groceries',
+      'Eating Out',
+      'Market',
+      'Supermarket',
+      'Food Delivery',
+    ],
     'Chama': ['Contributions', 'Loans', 'Fines', 'Events', 'Savings'],
     'Entertainment': ['Movies', 'Concerts', 'Sports', 'Bars', 'Restaurants'],
     'Healthcare': ['Hospital', 'Clinic', 'Medication', 'Insurance', 'Checkup'],
@@ -283,13 +320,7 @@ class Budget {
 }
 
 // Budget status enum
-enum BudgetStatus {
-  active,
-  completed,
-  exceeded,
-  overdue,
-  upcoming,
-}
+enum BudgetStatus { active, completed, exceeded, overdue, upcoming }
 
 // Extension for status display
 extension BudgetStatusExtension on BudgetStatus {
@@ -323,42 +354,42 @@ extension BudgetStatusExtension on BudgetStatus {
     }
   }
 }
-      };
-    } catch (e) {
-      throw Exception('Failed to purchase airtime: $e');
-    }
+
+Future<Map<String, dynamic>> sendMoney({
+  required String phone,
+  required double amount,
+  required String reference,
+}) async {
+  if (!await isAccessTokenValid()) {
+    throw Exception('M-PESA authentication failed');
   }
 
-  Future<Map<String, dynamic>> sendMoney({
-    required String phone,
-    required double amount,
-    required String reference,
-  }) async {
-    if (!await isAccessTokenValid()) {
-      throw Exception('M-PESA authentication failed');
+  try {
+    // Format phone number
+    String formattedPhone = phone;
+    if (formattedPhone.startsWith('0')) {
+      formattedPhone = '254${formattedPhone.substring(1)}';
+    } else if (!formattedPhone.startsWith('254')) {
+      formattedPhone = '254$formattedPhone';
     }
 
-    try {
-      // Format phone number
-      String formattedPhone = phone;
-      if (formattedPhone.startsWith('0')) {
-        formattedPhone = '254${formattedPhone.substring(1)}';
-      } else if (!formattedPhone.startsWith('254')) {
-        formattedPhone = '254$formattedPhone';
-      }
+    // Simulate API call
+    await Future.delayed(const Duration(seconds: 3));
 
-      // Simulate API call
-      await Future.delayed(const Duration(seconds: 3));
-
-      // Return mock response
-      return {
-        'success': true,
-        'transactionId': 'MPE${DateTime.now().millisecondsSinceEpoch}',
-        'message': 'Transaction initiated successfully',
-        'amount': amount,
-        'recipient': formattedPhone,
-      };
-    } catch (e) {
-      throw Exception('Failed to send money: $e');
-    }
+    // Return mock response
+    return {
+      'success': true,
+      'transactionId': 'MPE${DateTime.now().millisecondsSinceEpoch}',
+      'message': 'Transaction initiated successfully',
+      'amount': amount,
+      'recipient': formattedPhone,
+    };
+  } catch (e) {
+    throw Exception('Failed to send money: $e');
   }
+}
+
+Future<bool> isAccessTokenValid() async {
+  // TODO: Implement the actual logic to validate the access token
+  return false; // Default return value to avoid null
+}

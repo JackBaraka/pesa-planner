@@ -52,6 +52,7 @@ class _BudgetCreationScreenState extends State<BudgetCreationScreen> {
       category: _selectedCategory,
       startDate: _startDate,
       endDate: _endDate,
+      createdAt: DateTime.now(),
     );
 
     final userId = Provider.of<AuthService>(
