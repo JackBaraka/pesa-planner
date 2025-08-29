@@ -214,7 +214,8 @@ class Budget {
       'Internet',
       'Garbage',
       'Rent',
-      'Security',
+      'wifi'
+          'Security',
     ],
     'M-PESA': [
       'Send Money',
