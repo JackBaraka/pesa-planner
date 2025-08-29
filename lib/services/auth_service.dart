@@ -1,5 +1,6 @@
 ﻿import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/widgets.dart' show GlobalKey;
 import 'package:pesa_planner/services/database_service.dart';
 import 'package:provider/provider.dart';
 
@@ -17,6 +18,8 @@ class AuthService with ChangeNotifier {
   }
 
   User? get currentUser => _currentUser;
+
+  get isInitialized => null;
 
   // Email sign-up with error message return
   Future<String?> signUpWithEmail(String email, String password) async {
