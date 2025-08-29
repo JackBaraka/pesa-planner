@@ -29,7 +29,7 @@ class MpesaService with ChangeNotifier {
         );
         notifyListeners();
       } else {
-        throw Exception('Failed to authenticate with M-PESA API');
+        throw Exception('Failed to establish authentication with M-PESA API');
       }
     } catch (e) {
       throw Exception('M-PESA authentication error: $e');
