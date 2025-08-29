@@ -137,7 +137,7 @@ class DatabaseService {
               try {
                 final data = doc.data();
                 if (data != null) {
-                  return Expense.fromMap(data);
+                  return Expense.fromMap(data as Map<String, dynamic>);
                 }
                 return Expense(
                   id: 'invalid',
