@@ -1,5 +1,6 @@
 ﻿import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart' show NavigatorState;
 import 'package:flutter/widgets.dart' show GlobalKey;
 import 'package:pesa_planner/services/database_service.dart';
 import 'package:provider/provider.dart';
