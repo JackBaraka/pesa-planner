@@ -1,39 +1,43 @@
 ﻿import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
-import 'package:pesa_planner/data/models/user_model.dart'; // Ensure this import exists
-import 'package:flutter/material.dart';
+import 'package:pesa_planner/services/database_service.dart';
+import 'package:provider/provider.dart';
 
 class AuthService with ChangeNotifier {
   final FirebaseAuth _auth = FirebaseAuth.instance;
-  AppUser? _currentUser;
+  User? _currentUser;
 
   AuthService() {
-    // Initialize auth state listener
-    _auth.authStateChanges().listen((User? user) {
-      if (user != null) {
-        _currentUser = AppUser(
-          uid: user.uid,
-          email: user.email,
-          phone: user.phoneNumber,
-          displayName: user.displayName ?? 'User',
-        );
-      } else {
-        _currentUser = null;
-      }
-      notifyListeners(); // Notify about user changes
-    });
+    _auth.authStateChanges().listen(_authStateChanged);
   }
+
+  void _authStateChanged(User? user) {
+    _currentUser = user;
+    notifyListeners();
+  }
+
+  User? get currentUser => _currentUser;
 
   // Email sign-up with error message return
   Future<String?> signUpWithEmail(String email, String password) async {
     try {
-      await _auth.createUserWithEmailAndPassword(
+      final result = await _auth.createUserWithEmailAndPassword(
         email: email,
         password: password,
       );
+
+      if (result.user != null) {
+        // Initialize user data in Firestore
+        final database = Provider.of<DatabaseService>(
+          navigatorKey.currentContext!,
+          listen: false,
+        );
+        await database.initializeUserData(result.user!.uid, email);
+      }
+
       return null; // success
     } on FirebaseAuthException catch (e) {
-      return e.message ?? "Sign-up failed. Please try again.";
+      return _getAuthErrorMessage(e);
     } catch (e) {
       return "An unknown error occurred during sign-up.";
     }
@@ -45,7 +49,7 @@ class AuthService with ChangeNotifier {
       await _auth.signInWithEmailAndPassword(email: email, password: password);
       return null; // success
     } on FirebaseAuthException catch (e) {
-      return e.message ?? "Sign-in failed. Please check your credentials.";
+      return _getAuthErrorMessage(e);
     } catch (e) {
       return "An unknown error occurred during sign-in.";
     }
@@ -59,27 +63,21 @@ class AuthService with ChangeNotifier {
     Function(PhoneAuthCredential)? onVerificationCompleted,
     Function()? onCodeAutoRetrievalTimeout,
   }) async {
-    try {
-      // Format Kenyan phone number
-      String formattedPhone = phone;
-      if (!phone.startsWith('+254')) {
-        if (phone.startsWith('0')) {
-          formattedPhone = '+254${phone.substring(1)}';
-        } else {
-          formattedPhone = '+254$phone';
-        }
-      }
+    final formattedPhone = phone.startsWith('+254')
+        ? phone
+        : '+254${phone.substring(1)}';
 
+    try {
       await _auth.verifyPhoneNumber(
         phoneNumber: formattedPhone,
         verificationCompleted: (credential) async {
-          await _auth.signInWithCredential(credential);
           if (onVerificationCompleted != null) {
             onVerificationCompleted(credential);
+          } else {
+            await _auth.signInWithCredential(credential);
           }
         },
-        verificationFailed: (e) =>
-            onError(e.message ?? "Phone verification failed"),
+        verificationFailed: (e) => onError(_getAuthErrorMessage(e)),
         codeSent: (verificationId, resendToken) => onCodeSent(verificationId),
         codeAutoRetrievalTimeout: (verificationId) {
           if (onCodeAutoRetrievalTimeout != null) {
@@ -89,7 +87,7 @@ class AuthService with ChangeNotifier {
         timeout: const Duration(seconds: 120),
       );
     } catch (e) {
-      onError("Failed to verify phone number");
+      onError("Phone verification failed: $e");
     }
   }
 
@@ -103,35 +101,61 @@ class AuthService with ChangeNotifier {
       await _auth.signInWithCredential(credential);
       return null; // success
     } on FirebaseAuthException catch (e) {
-      return e.message ?? "Invalid OTP code";
+      return _getAuthErrorMessage(e);
     } catch (e) {
-      return "Failed to sign in with OTP";
+      return "An unknown error occurred during OTP sign-in.";
     }
   }
 
   // Sign out
-  Future<void> signOut() async {
-    await _auth.signOut();
-    _currentUser = null;
-    notifyListeners();
+  Future<String?> signOut() async {
+    try {
+      await _auth.signOut();
+      notifyListeners();
+      return null; // success
+    } catch (e) {
+      return "Error signing out: $e";
+    }
   }
 
-  // Get current user (synchronous access)
-  AppUser? get currentUser => _currentUser;
-
-  // User stream for real-time auth state
-  Stream<AppUser?> get user {
-    return _auth.authStateChanges().map((User? firebaseUser) {
-      if (firebaseUser == null) return null;
-
-      return AppUser(
-        uid: firebaseUser.uid,
-        email: firebaseUser.email,
-        phone: firebaseUser.phoneNumber,
-        displayName: firebaseUser.displayName ?? 'User',
-      );
-    });
+  // Password reset
+  Future<String?> resetPassword(String email) async {
+    try {
+      await _auth.sendPasswordResetEmail(email: email);
+      return null; // success
+    } on FirebaseAuthException catch (e) {
+      return _getAuthErrorMessage(e);
+    } catch (e) {
+      return "An unknown error occurred during password reset.";
+    }
   }
 
-  bool? get isInitialized => null;
+  // Helper method to get user-friendly error messages
+  String _getAuthErrorMessage(FirebaseAuthException e) {
+    switch (e.code) {
+      case 'invalid-email':
+        return 'The email address is not valid.';
+      case 'user-disabled':
+        return 'This user account has been disabled.';
+      case 'user-not-found':
+        return 'No user found with this email address.';
+      case 'wrong-password':
+        return 'Incorrect password. Please try again.';
+      case 'email-already-in-use':
+        return 'This email address is already in use.';
+      case 'operation-not-allowed':
+        return 'Email/password accounts are not enabled.';
+      case 'weak-password':
+        return 'The password is too weak.';
+      case 'too-many-requests':
+        return 'Too many attempts. Please try again later.';
+      case 'network-request-failed':
+        return 'Network error. Please check your internet connection.';
+      default:
+        return e.message ?? 'An unknown authentication error occurred.';
+    }
+  }
 }
+
+// Global navigator key for accessing context outside widgets
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
