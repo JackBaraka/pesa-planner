@@ -29,7 +29,7 @@ void main() async {
     runApp(const AppWidget());
   } catch (e) {
     print('Failed to initialize Firebase: $e');
-    // Fallback UI for when Firebase fails
+    // Fallback UI in case of initialization failure
     runApp(
       MaterialApp(
         home: Scaffold(
