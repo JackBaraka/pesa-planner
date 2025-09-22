@@ -1,167 +1,307 @@
 ﻿import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'package:flutter/foundation.dart';
+import 'package:pesa_planner/data/models/mpesa_transaction_model.dart';
 
-class MpesaService with ChangeNotifier {
-  static const String _baseUrl = 'https://sandbox.safaricom.co.ke';
+class MpesaService {
+  static const String _sandboxBaseUrl = 'https://sandbox.safaricom.co.ke';
+  static const String _productionBaseUrl = 'https://api.safaricom.co.ke';
+
   String _accessToken = '';
   DateTime _tokenExpiry = DateTime.now();
-  final String consumerKey;
-  final String consumerSecret;
+  bool _isSandbox = true; // Change to false for production
 
-  MpesaService({required this.consumerKey, required this.consumerSecret});
+  String get _baseUrl => _isSandbox ? _sandboxBaseUrl : _productionBaseUrl;
 
-  Future<void> authenticate() async {
+  // Get access token from Safaricom API
+  Future<String?> _getAccessToken() async {
+    if (_accessToken.isNotEmpty && DateTime.now().isBefore(_tokenExpiry)) {
+      return _accessToken;
+    }
+
     try {
-      final credentials = base64.encode(
-        utf8.encode('$consumerKey:$consumerSecret'),
-      );
       final response = await http.get(
         Uri.parse('$_baseUrl/oauth/v1/generate?grant_type=client_credentials'),
-        headers: {'Authorization': 'Basic $credentials'},
+        headers: {
+          'Authorization': 'Basic ${_getBase64Credentials()}',
+          'Content-Type': 'application/json',
+        },
       );
 
       if (response.statusCode == 200) {
-        final data = json.decode(response.body);
+        final data = jsonDecode(response.body);
         _accessToken = data['access_token'];
         _tokenExpiry = DateTime.now().add(
-          Duration(seconds: data['expires_in']),
+          Duration(seconds: data['expires_in'] ?? 3600),
         );
-        notifyListeners();
+        return _accessToken;
       } else {
-        throw Exception('Failed to establish authentication with M-PESA API');
+        throw Exception('Failed to get access token: ${response.statusCode}');
       }
     } catch (e) {
-      throw Exception('M-PESA authentication error: $e');
+      throw Exception('Error getting access token: $e');
     }
   }
 
-  Future<bool> isAccessTokenValid() async {
-    if (_accessToken.isEmpty || DateTime.now().isAfter(_tokenExpiry)) {
-      await authenticate();
-    }
-    return _accessToken.isNotEmpty;
+  // Base64 encode consumer key and secret
+  String _getBase64Credentials() {
+    const consumerKey = 'YOUR_CONSUMER_KEY'; // Replace with your actual key
+    const consumerSecret =
+        'YOUR_CONSUMER_SECRET'; // Replace with your actual secret
+    final credentials = '$consumerKey:$consumerSecret';
+    return base64Encode(utf8.encode(credentials));
   }
 
-  Future<List<Map<String, dynamic>>> fetchTransactions(
-    String phoneNumber,
-  ) async {
-    if (!await isAccessTokenValid()) {
-      throw Exception('M-PESA authentication failed');
-    }
-
-    try {
-      // Format phone number (ensure it starts with 254)
-      String formattedPhone = phoneNumber;
-      if (formattedPhone.startsWith('0')) {
-        formattedPhone = '254${formattedPhone.substring(1)}';
-      } else if (!formattedPhone.startsWith('254')) {
-        formattedPhone = '254$formattedPhone';
-      }
-
-      // In a real implementation, this would call the M-PESA API
-      // For now, we'll return mock data
-      await Future.delayed(const Duration(seconds: 2)); // Simulate API call
-
-      // Mock transaction data
-      return [
-        {
-          'id': '1',
-          'type': 'Received',
-          'amount': 1500.0,
-          'date': DateTime.now().subtract(const Duration(days: 1)),
-          'sender': 'John Doe',
-          'reference': 'Payment for services',
-          'phone': formattedPhone,
-        },
-        {
-          'id': '2',
-          'type': 'Sent',
-          'amount': 500.0,
-          'date': DateTime.now().subtract(const Duration(days: 3)),
-          'recipient': 'Jane Smith',
-          'reference': 'Shopping',
-          'phone': formattedPhone,
-        },
-        {
-          'id': '3',
-          'type': 'Received',
-          'amount': 2500.0,
-          'date': DateTime.now().subtract(const Duration(days: 5)),
-          'sender': 'ABC Company',
-          'reference': 'Salary',
-          'phone': formattedPhone,
-        },
-      ];
-    } catch (e) {
-      throw Exception('Failed to fetch M-PESA transactions: $e');
-    }
-  }
-
-  Future<Map<String, dynamic>> sendMoney({
-    required String phone,
+  // STK Push for Lipa Na M-PESA
+  Future<Map<String, dynamic>> initiateSTKPush({
+    required String phoneNumber,
     required double amount,
-    required String reference,
+    required String accountReference,
+    required String description,
   }) async {
-    if (!await isAccessTokenValid()) {
-      throw Exception('M-PESA authentication failed');
-    }
-
     try {
-      // Format phone number
-      String formattedPhone = phone;
-      if (formattedPhone.startsWith('0')) {
-        formattedPhone = '254${formattedPhone.substring(1)}';
-      } else if (!formattedPhone.startsWith('254')) {
-        formattedPhone = '254$formattedPhone';
+      final token = await _getAccessToken();
+      final timestamp = _getTimestamp();
+      final password = _getPassword(timestamp);
+
+      final response = await http.post(
+        Uri.parse('$_baseUrl/mpesa/stkpush/v1/processrequest'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode({
+          "BusinessShortCode": _isSandbox
+              ? "174379"
+              : "YOUR_BUSINESS_SHORTCODE",
+          "Password": password,
+          "Timestamp": timestamp,
+          "TransactionType": "CustomerPayBillOnline",
+          "Amount": amount.toStringAsFixed(0),
+          "PartyA": _formatPhoneNumber(phoneNumber),
+          "PartyB": _isSandbox ? "174379" : "YOUR_BUSINESS_SHORTCODE",
+          "PhoneNumber": _formatPhoneNumber(phoneNumber),
+          "CallBackURL":
+              "https://yourdomain.com/mpesa-callback", // Replace with your callback URL
+          "AccountReference": accountReference,
+          "TransactionDesc": description,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return {
+          'success': true,
+          'data': data,
+          'checkoutRequestID': data['CheckoutRequestID'],
+          'message': 'STK Push initiated successfully',
+        };
+      } else {
+        return {'success': false, 'error': 'STK Push failed: ${response.body}'};
       }
+    } catch (e) {
+      return {'success': false, 'error': 'STK Push error: $e'};
+    }
+  }
 
-      // Simulate API call
-      await Future.delayed(const Duration(seconds: 3));
+  // Paybill payment
+  Future<Map<String, dynamic>> paybillPayment({
+    required String phoneNumber,
+    required double amount,
+    required String paybillNumber,
+    required String accountNumber,
+    required String description,
+  }) async {
+    try {
+      final token = await _getAccessToken();
 
-      // Return mock response
+      final response = await http.post(
+        Uri.parse('$_baseUrl/mpesa/b2c/v1/paymentrequest'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode({
+          "InitiatorName": "YOUR_INITIATOR_NAME",
+          "SecurityCredential": "YOUR_SECURITY_CREDENTIAL",
+          "CommandID": "BusinessPayment",
+          "Amount": amount.toStringAsFixed(0),
+          "PartyA": "YOUR_SHORTCODE",
+          "PartyB": paybillNumber,
+          "Remarks": description,
+          "QueueTimeOutURL": "https://yourdomain.com/timeout",
+          "ResultURL": "https://yourdomain.com/result",
+          "Occasion": "BillPayment",
+          "AccountReference": accountNumber,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return {
+          'success': true,
+          'data': data,
+          'conversationId': data['ConversationID'],
+          'message': 'Paybill payment initiated successfully',
+        };
+      } else {
+        return {
+          'success': false,
+          'error': 'Paybill payment failed: ${response.body}',
+        };
+      }
+    } catch (e) {
+      return {'success': false, 'error': 'Paybill payment error: $e'};
+    }
+  }
+
+  // Send money to phone number
+  Future<Map<String, dynamic>> sendMoney({
+    required String fromPhoneNumber,
+    required String toPhoneNumber,
+    required double amount,
+    required String description,
+  }) async {
+    try {
+      final token = await _getAccessToken();
+
+      final response = await http.post(
+        Uri.parse('$_baseUrl/mpesa/b2c/v1/paymentrequest'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode({
+          "InitiatorName": "YOUR_INITIATOR_NAME",
+          "SecurityCredential": "YOUR_SECURITY_CREDENTIAL",
+          "CommandID": "BusinessPayment",
+          "Amount": amount.toStringAsFixed(0),
+          "PartyA": "YOUR_SHORTCODE",
+          "PartyB": _formatPhoneNumber(toPhoneNumber),
+          "Remarks": description,
+          "QueueTimeOutURL": "https://yourdomain.com/timeout",
+          "ResultURL": "https://yourdomain.com/result",
+          "Occasion": "MoneyTransfer",
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return {
+          'success': true,
+          'data': data,
+          'conversationId': data['ConversationID'],
+          'message': 'Money sent successfully',
+        };
+      } else {
+        return {
+          'success': false,
+          'error': 'Send money failed: ${response.body}',
+        };
+      }
+    } catch (e) {
+      return {'success': false, 'error': 'Send money error: $e'};
+    }
+  }
+
+  // Check transaction status
+  Future<Map<String, dynamic>> checkTransactionStatus(
+    String transactionId,
+  ) async {
+    try {
+      final token = await _getAccessToken();
+
+      final response = await http.post(
+        Uri.parse('$_baseUrl/mpesa/transactionstatus/v1/query'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode({
+          "Initiator": "YOUR_INITIATOR_NAME",
+          "SecurityCredential": "YOUR_SECURITY_CREDENTIAL",
+          "CommandID": "TransactionStatusQuery",
+          "TransactionID": transactionId,
+          "PartyA": "YOUR_SHORTCODE",
+          "IdentifierType": "1",
+          "ResultURL": "https://yourdomain.com/result",
+          "QueueTimeOutURL": "https://yourdomain.com/timeout",
+          "Remarks": "Transaction Status Query",
+          "Occasion": "TransactionStatus",
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return {
+          'success': true,
+          'data': data,
+          'message': 'Transaction status retrieved',
+        };
+      } else {
+        return {
+          'success': false,
+          'error': 'Status check failed: ${response.body}',
+        };
+      }
+    } catch (e) {
+      return {'success': false, 'error': 'Status check error: $e'};
+    }
+  }
+
+  // Helper methods
+  String _getTimestamp() {
+    final now = DateTime.now().toUtc();
+    return now.toString().replaceAll(RegExp(r'[^0-9]'), '').substring(0, 14);
+  }
+
+  String _getPassword(String timestamp) {
+    const businessShortCode = "174379"; // Sandbox shortcode
+    const passkey = "YOUR_PASSKEY"; // Replace with your actual passkey
+    final password = '$businessShortCode$passkey$timestamp';
+    return base64Encode(utf8.encode(password));
+  }
+
+  String _formatPhoneNumber(String phoneNumber) {
+    // Convert 07xxxxxxxx to 2547xxxxxxxx
+    if (phoneNumber.startsWith('07')) {
+      return '254${phoneNumber.substring(1)}';
+    } else if (phoneNumber.startsWith('01')) {
+      return '254${phoneNumber.substring(1)}';
+    } else if (phoneNumber.startsWith('254')) {
+      return phoneNumber;
+    } else {
+      return phoneNumber; // Return as is if format is unknown
+    }
+  }
+
+  // Simulate M-PESA transaction (for testing without actual API calls)
+  Future<Map<String, dynamic>> simulateMpesaTransaction({
+    required String transactionType,
+    required double amount,
+    required String phoneNumber,
+    required String accountNumber,
+    String? description,
+  }) async {
+    // Simulate API delay
+    await Future.delayed(const Duration(seconds: 2));
+
+    // Simulate success 80% of the time for testing
+    final isSuccess = DateTime.now().millisecond % 5 != 0;
+
+    if (isSuccess) {
       return {
         'success': true,
         'transactionId': 'MPE${DateTime.now().millisecondsSinceEpoch}',
-        'message': 'Transaction initiated successfully',
-        'amount': amount,
-        'recipient': formattedPhone,
+        'conversationId': 'CONV${DateTime.now().millisecondsSinceEpoch}',
+        'message': 'Transaction completed successfully',
+        'data': {'ResponseCode': '0', 'ResponseDescription': 'Success'},
       };
-    } catch (e) {
-      throw Exception('Failed to send money: $e');
-    }
-  }
-
-  Future<Map<String, dynamic>> buyAirtime({
-    required String phone,
-    required double amount,
-  }) async {
-    if (!await isAccessTokenValid()) {
-      throw Exception('M-PESA authentication failed');
-    }
-
-    try {
-      // Format phone number
-      String formattedPhone = phone;
-      if (formattedPhone.startsWith('0')) {
-        formattedPhone = '254${formattedPhone.substring(1)}';
-      } else if (!formattedPhone.startsWith('254')) {
-        formattedPhone = '254$formattedPhone';
-      }
-
-      // Simulate API call
-      await Future.delayed(const Duration(seconds: 2));
-
-      // Return mock response
+    } else {
       return {
-        'success': true,
-        'transactionId': 'AIR${DateTime.now().millisecondsSinceEpoch}',
-        'message': 'Airtime purchase successful',
-        'amount': amount,
-        'phone': formattedPhone,
+        'success': false,
+        'error': 'Transaction failed: Insufficient funds',
+        'data': {'ResponseCode': '1', 'ResponseDescription': 'Failed'},
       };
-    } catch (e) {
-      throw Exception('Failed to buy airtime: $e');
     }
   }
 }
