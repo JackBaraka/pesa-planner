@@ -188,3 +188,9 @@ class _MpesaTransactionsScreenState extends State<MpesaTransactionsScreen> {
     );
   }
 }
+
+extension on MpesaService {
+  Future fetchTransactions(String text) {
+    throw UnimplementedError('fetchTransactions method is not implemented');
+  }
+}

@@ -1,4 +1,6 @@
-﻿import 'dart:convert';
+﻿// ignore_for_file: prefer_final_fields
+
+import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:pesa_planner/data/models/mpesa_transaction_model.dart';
 
@@ -301,7 +303,11 @@ class MpesaService {
         'success': false,
         'error': 'Transaction failed: Insufficient funds',
         'data': {'ResponseCode': '1', 'ResponseDescription': 'Failed'},
-      };
+   
+
+  Future fetchTransactions(String text) async {
+    // TODO: Implement the fetchTransactions logic
+  }
     }
   }
 }
