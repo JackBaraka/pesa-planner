@@ -303,11 +303,11 @@ class MpesaService {
         'success': false,
         'error': 'Transaction failed: Insufficient funds',
         'data': {'ResponseCode': '1', 'ResponseDescription': 'Failed'},
-   
-
-  Future fetchTransactions(String text) async {
-    // TODO: Implement the fetchTransactions logic
-  }
+      };
     }
+  }
+
+  Future<void> fetchTransactions(String text) async {
+    // TODO: Implement the fetchTransactions logic or remove this method if not needed.
   }
 }
