@@ -190,7 +190,27 @@ class _MpesaTransactionsScreenState extends State<MpesaTransactionsScreen> {
 }
 
 extension on MpesaService {
-  Future fetchTransactions(String text) {
-    throw UnimplementedError('fetchTransactions method is not implemented');
+  Future<List<Map<String, dynamic>>> fetchTransactions(
+    String phoneNumber,
+  ) async {
+    // Replace this with actual logic to fetch transactions
+    return [
+      {
+        'type': 'Received',
+        'sender': 'John Doe',
+        'recipient': 'You',
+        'reference': 'ABC123',
+        'date': DateTime.now(),
+        'amount': 1000.0,
+      },
+      {
+        'type': 'Sent',
+        'sender': 'You',
+        'recipient': 'Jane Doe',
+        'reference': 'XYZ456',
+        'date': DateTime.now().subtract(const Duration(days: 1)),
+        'amount': 500.0,
+      },
+    ];
   }
 }
