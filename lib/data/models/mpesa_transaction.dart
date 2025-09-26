@@ -1,4 +1,6 @@
-﻿import 'package:flutter/material.dart';
+﻿// ignore_for_file: unused_element
+
+import 'package:flutter/material.dart';
 import 'package:pesa_planner/core/theme/app_colors.dart';
 import 'package:pesa_planner/core/utils/currency_formatter.dart';
 import 'package:pesa_planner/core/utils/date_utils.dart';
@@ -194,7 +196,7 @@ extension on MpesaService {
     String phoneNumber,
   ) async {
     // Replace this with actual logic to fetch transactions
-    return [
+    return Future.value([
       {
         'type': 'Received',
         'sender': 'John Doe',
@@ -211,6 +213,6 @@ extension on MpesaService {
         'date': DateTime.now().subtract(const Duration(days: 1)),
         'amount': 500.0,
       },
-    ];
+    ]);
   }
 }

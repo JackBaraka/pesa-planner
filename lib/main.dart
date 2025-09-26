@@ -38,23 +38,6 @@ void main() async {
     import;
     'package:pesa_planner/services/mpesa_service.dart';
 
-    // Update your MultiProvider
-    runApp(
-      MultiProvider(
-            providers: [
-              Provider<AuthService>(create: (_) => AuthService()),
-              Provider<MpesaService>(
-                create: (_) => MpesaService(
-                  consumerKey:
-                      'your_consumer_key_here', // Replace with your actual keys
-                  consumerSecret: 'your_consumer_secret_here',
-                ),
-              ),
-            ],
-            child: const AppWidget(),
-          )
-          as Widget,
-    );
     // Fallback UI in case of initialization failure
     runApp(
       MaterialApp(
