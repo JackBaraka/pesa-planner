@@ -112,6 +112,10 @@ class AppRouter {
   }
 }
 
+class KPLCBillListScreen {
+  const KPLCBillListScreen();
+}
+
 class UtilitiesDashboard {
   const UtilitiesDashboard();
 }
