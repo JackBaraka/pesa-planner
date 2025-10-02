@@ -112,6 +112,22 @@ class AppRouter {
   }
 }
 
+class MpesaHistoryScreen {
+  const MpesaHistoryScreen();
+}
+
+class MpesaPaymentScreen extends StatelessWidget {
+  const MpesaPaymentScreen({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('M-PESA Payment')),
+      body: const Center(child: Text('M-PESA Payment Screen')),
+    );
+  }
+}
+
 class KPLCBillsScreen {
   const KPLCBillsScreen();
 }
