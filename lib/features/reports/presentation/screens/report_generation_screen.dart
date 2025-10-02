@@ -1,3 +1,5 @@
+// ignore_for_file: depend_on_referenced_packages
+
 import 'package:flutter/material.dart';
 import 'package:pesa_planner/core/theme/app_colors.dart';
 import 'package:pesa_planner/services/pdf_service.dart';
