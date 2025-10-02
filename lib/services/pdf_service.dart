@@ -1,4 +1,5 @@
-﻿import 'package:pdf/pdf.dart';
+﻿import 'package:flutter/services.dart' show rootBundle;
+import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:pesa_planner/core/utils/currency_formatter.dart';
 import 'package:pesa_planner/data/models/budget_model.dart';
@@ -8,6 +9,8 @@ import 'package:pesa_planner/data/models/kplc_bill_model.dart';
 import 'package:intl/intl.dart';
 
 class PDFService {
+  Null get context => null;
+
   // Generate comprehensive financial report
   Future<pw.Document> generateFinancialReport({
     required String userName,
@@ -25,7 +28,7 @@ class PDFService {
     pdf.addPage(
       pw.MultiPage(
         pageFormat: PdfPageFormat.a4,
-        theme: _kenyanTheme(),
+        theme: await _kenyanTheme(),
         build: (context) => [
           _buildHeader(userName, startDate, endDate),
           _buildExecutiveSummary(expenseSummary, mpesaSummary, budgets),
@@ -42,15 +45,12 @@ class PDFService {
   }
 
   // Kenyan-themed PDF styling
-  pw.ThemeData _kenyanTheme() {
+  Future<pw.ThemeData> _kenyanTheme() async {
     return pw.ThemeData.withFont(
       base: pw.Font.ttf(await rootBundle.load("fonts/Roboto-Regular.ttf")),
       bold: pw.Font.ttf(await rootBundle.load("fonts/Roboto-Bold.ttf")),
     ).copyWith(
-      defaultTextStyle: pw.TextStyle(
-        fontSize: 10,
-        color: PdfColors.black,
-      ),
+      defaultTextStyle: pw.TextStyle(fontSize: 10, color: PdfColors.black),
       header1: pw.TextStyle(
         fontSize: 18,
         fontWeight: pw.FontWeight.bold,
@@ -70,7 +70,12 @@ class PDFService {
   }
 
   // Report header with Kenyan elements
-  pw.Widget _buildHeader(String userName, DateTime startDate, DateTime endDate) {
+  pw.Widget _buildHeader(
+    String userName,
+    DateTime startDate,
+    DateTime endDate,
+    pw.Context context,
+  ) {
     return pw.Column(
       crossAxisAlignment: pw.CrossAxisAlignment.start,
       children: [
@@ -85,7 +90,9 @@ class PDFService {
                   style: pw.Theme.of(context).header1,
                 ),
                 pw.Text('Generated for: $userName'),
-                pw.Text('Period: ${DateFormat('dd MMM yyyy').format(startDate)} - ${DateFormat('dd MMM yyyy').format(endDate)}'),
+                pw.Text(
+                  'Period: ${DateFormat('dd MMM yyyy').format(startDate)} - ${DateFormat('dd MMM yyyy').format(endDate)}',
+                ),
               ],
             ),
             pw.Container(
@@ -108,7 +115,10 @@ class PDFService {
             ),
           ],
         ),
-        pw.Divider(thickness: 2, color: PdfColor.fromInt(0xFFF0A800)), // Kenya gold
+        pw.Divider(
+          thickness: 2,
+          color: PdfColor.fromInt(0xFFF0A800),
+        ), // Kenya gold
         pw.SizedBox(height: 10),
       ],
     );
@@ -120,10 +130,18 @@ class PDFService {
     Map<String, double> mpesaSummary,
     List<Budget> budgets,
   ) {
-    final totalExpenses = expenseSummary.values.fold(0.0, (sum, amount) => sum + amount);
-    final totalMpesa = mpesaSummary.values.fold(0.0, (sum, amount) => sum + amount);
+    final totalExpenses = expenseSummary.values.fold(
+      0.0,
+      (sum, amount) => sum + amount,
+    );
+    final totalMpesa = mpesaSummary.values.fold(
+      0.0,
+      (sum, amount) => sum + amount,
+    );
     final activeBudgets = budgets.where((b) => b.isActive).length;
-    final completedBudgets = budgets.where((b) => b.status == BudgetStatus.completed).length;
+    final completedBudgets = budgets
+        .where((b) => b.status == BudgetStatus.completed)
+        .length;
 
     return pw.Container(
       margin: const pw.EdgeInsets.only(bottom: 15),
@@ -148,7 +166,10 @@ class PDFService {
   }
 
   // Expense analysis section
-  pw.Widget _buildExpenseAnalysis(List<Expense> expenses, Map<String, double> summary) {
+  pw.Widget _buildExpenseAnalysis(
+    List<Expense> expenses,
+    Map<String, double> summary,
+  ) {
     final sortedSummary = summary.entries.toList()
       ..sort((a, b) => b.value.compareTo(a.value));
 
@@ -163,19 +184,30 @@ class PDFService {
             border: pw.TableBorder.all(),
             children: [
               pw.TableRow(
-                decoration: pw.BoxDecoration(color: PdfColor.fromInt(0xFF006600).withOpacity(0.1)),
+                decoration: pw.BoxDecoration(
+                  color: PdfColor.fromInt(0xFF006600).withOpacity(0.1),
+                ),
                 children: [
                   pw.Padding(
                     padding: const pw.EdgeInsets.all(8),
-                    child: pw.Text('Category', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+                    child: pw.Text(
+                      'Category',
+                      style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
+                    ),
                   ),
                   pw.Padding(
                     padding: const pw.EdgeInsets.all(8),
-                    child: pw.Text('Amount (KSh)', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+                    child: pw.Text(
+                      'Amount (KSh)',
+                      style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
+                    ),
                   ),
                   pw.Padding(
                     padding: const pw.EdgeInsets.all(8),
-                    child: pw.Text('Percentage', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+                    child: pw.Text(
+                      'Percentage',
+                      style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
+                    ),
                   ),
                 ],
               ),
@@ -192,7 +224,9 @@ class PDFService {
                     ),
                     pw.Padding(
                       padding: const pw.EdgeInsets.all(6),
-                      child: pw.Text('${_calculatePercentage(entry.value, summary.values.fold(0.0, (sum, amount) => sum + amount)).toStringAsFixed(1)}%'),
+                      child: pw.Text(
+                        '${_calculatePercentage(entry.value, summary.values.fold(0.0, (sum, amount) => sum + amount)).toStringAsFixed(1)}%',
+                      ),
                     ),
                   ],
                 ),
@@ -201,7 +235,10 @@ class PDFService {
           if (sortedSummary.length > 8)
             pw.Padding(
               padding: const pw.EdgeInsets.only(top: 8),
-              child: pw.Text('+ ${sortedSummary.length - 8} more categories...', style: pw.TextStyle(fontSize: 9)),
+              child: pw.Text(
+                '+ ${sortedSummary.length - 8} more categories...',
+                style: pw.TextStyle(fontSize: 9),
+              ),
             ),
         ],
       ),
@@ -220,7 +257,10 @@ class PDFService {
           pw.Text('BUDGET PERFORMANCE', style: pw.Theme.of(context).header2),
           pw.SizedBox(height: 10),
           if (activeBudgets.isEmpty)
-            pw.Text('No active budgets for this period.', style: pw.TextStyle(fontStyle: pw.FontStyle.italic)),
+            pw.Text(
+              'No active budgets for this period.',
+              style: pw.TextStyle(fontStyle: pw.FontStyle.italic),
+            ),
           for (final budget in activeBudgets.take(5))
             pw.Container(
               margin: const pw.EdgeInsets.only(bottom: 8),
@@ -230,11 +270,19 @@ class PDFService {
                   pw.Row(
                     mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
                     children: [
-                      pw.Text(budget.name, style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
-                      pw.Text('${budget.progressPercentage}%', style: pw.TextStyle(
-                        color: budget.isExceeded ? PdfColors.red : PdfColors.black,
-                        fontWeight: pw.FontWeight.bold,
-                      )),
+                      pw.Text(
+                        budget.name,
+                        style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
+                      ),
+                      pw.Text(
+                        '${budget.progressPercentage}%',
+                        style: pw.TextStyle(
+                          color: budget.isExceeded
+                              ? PdfColors.red
+                              : PdfColors.black,
+                          fontWeight: pw.FontWeight.bold,
+                        ),
+                      ),
                     ],
                   ),
                   pw.SizedBox(height: 4),
@@ -249,10 +297,13 @@ class PDFService {
                         ),
                       ),
                       pw.Container(
-                        width: double.infinity * (budget.progress.clamp(0.0, 1.0)),
+                        width:
+                            double.infinity * (budget.progress.clamp(0.0, 1.0)),
                         height: 8,
                         decoration: pw.BoxDecoration(
-                          color: budget.isExceeded ? PdfColors.red : PdfColor.fromInt(0xFF006600),
+                          color: budget.isExceeded
+                              ? PdfColors.red
+                              : PdfColor.fromInt(0xFF006600),
                           borderRadius: pw.BorderRadius.circular(4),
                         ),
                       ),
@@ -262,8 +313,14 @@ class PDFService {
                   pw.Row(
                     mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
                     children: [
-                      pw.Text('Spent: ${budget.formattedSpent}', style: pw.TextStyle(fontSize: 9)),
-                      pw.Text('Remaining: ${budget.formattedRemaining}', style: pw.TextStyle(fontSize: 9)),
+                      pw.Text(
+                        'Spent: ${budget.formattedSpent}',
+                        style: pw.TextStyle(fontSize: 9),
+                      ),
+                      pw.Text(
+                        'Remaining: ${budget.formattedRemaining}',
+                        style: pw.TextStyle(fontSize: 9),
+                      ),
                     ],
                   ),
                 ],
@@ -275,8 +332,13 @@ class PDFService {
   }
 
   // M-PESA analysis section
-  pw.Widget _buildMpesaAnalysis(List<MpesaTransaction> transactions, Map<String, double> summary) {
-    final successfulTransactions = transactions.where((t) => t.isSuccessful).toList();
+  pw.Widget _buildMpesaAnalysis(
+    List<MpesaTransaction> transactions,
+    Map<String, double> summary,
+  ) {
+    final successfulTransactions = transactions
+        .where((t) => t.isSuccessful)
+        .toList();
     final sortedSummary = summary.entries.toList()
       ..sort((a, b) => b.value.compareTo(a.value));
 
@@ -285,7 +347,10 @@ class PDFService {
       child: pw.Column(
         crossAxisAlignment: pw.CrossAxisAlignment.start,
         children: [
-          pw.Text('M-PESA TRANSACTION ANALYSIS', style: pw.Theme.of(context).header2),
+          pw.Text(
+            'M-PESA TRANSACTION ANALYSIS',
+            style: pw.Theme.of(context).header2,
+          ),
           pw.SizedBox(height: 10),
           pw.Row(
             crossAxisAlignment: pw.CrossAxisAlignment.start,
@@ -295,7 +360,10 @@ class PDFService {
                 child: pw.Column(
                   crossAxisAlignment: pw.CrossAxisAlignment.start,
                   children: [
-                    pw.Text('Transaction Types:', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+                    pw.Text(
+                      'Transaction Types:',
+                      style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
+                    ),
                     pw.SizedBox(height: 5),
                     for (final entry in sortedSummary.take(4))
                       pw.Padding(
@@ -321,8 +389,17 @@ class PDFService {
                   ),
                   child: pw.Column(
                     children: [
-                      pw.Text('Total', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
-                      pw.Text('${successfulTransactions.length}', style: pw.TextStyle(fontSize: 16, fontWeight: pw.FontWeight.bold)),
+                      pw.Text(
+                        'Total',
+                        style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
+                      ),
+                      pw.Text(
+                        '${successfulTransactions.length}',
+                        style: pw.TextStyle(
+                          fontSize: 16,
+                          fontWeight: pw.FontWeight.bold,
+                        ),
+                      ),
                       pw.Text('Transactions', style: pw.TextStyle(fontSize: 9)),
                     ],
                   ),
@@ -351,25 +428,43 @@ class PDFService {
           pw.Row(
             children: [
               pw.Expanded(
-                child: _buildUtilityCard('Total Paid', formatKSH(totalPaid), PdfColor.fromInt(0xFF006600)),
+                child: _buildUtilityCard(
+                  'Total Paid',
+                  formatKSH(totalPaid),
+                  PdfColor.fromInt(0xFF006600),
+                ),
               ),
               pw.SizedBox(width: 10),
               pw.Expanded(
-                child: _buildUtilityCard('Paid Bills', '${paidBills.length}', PdfColors.blue),
+                child: _buildUtilityCard(
+                  'Paid Bills',
+                  '${paidBills.length}',
+                  PdfColors.blue,
+                ),
               ),
               pw.SizedBox(width: 10),
               pw.Expanded(
-                child: _buildUtilityCard('Overdue', '${overdueBills.length}', PdfColors.red),
+                child: _buildUtilityCard(
+                  'Overdue',
+                  '${overdueBills.length}',
+                  PdfColors.red,
+                ),
               ),
             ],
           ),
           if (overdueBills.isNotEmpty) ...[
             pw.SizedBox(height: 10),
-            pw.Text('Overdue Bills:', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+            pw.Text(
+              'Overdue Bills:',
+              style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
+            ),
             for (final bill in overdueBills.take(3))
               pw.Padding(
                 padding: const pw.EdgeInsets.only(top: 4),
-                child: pw.Text('• ${bill.accountNumber} - ${bill.formattedAmount} (Due: ${DateFormat('dd/MM/yyyy').format(bill.dueDate)})', style: pw.TextStyle(fontSize: 9, color: PdfColors.red)),
+                child: pw.Text(
+                  '• ${bill.accountNumber} - ${bill.formattedAmount} (Due: ${DateFormat('dd/MM/yyyy').format(bill.dueDate)})',
+                  style: pw.TextStyle(fontSize: 9, color: PdfColors.red),
+                ),
               ),
           ],
         ],
@@ -378,9 +473,15 @@ class PDFService {
   }
 
   // Financial recommendations
-  pw.Widget _buildRecommendations(Map<String, double> expenseSummary, List<Budget> budgets) {
+  pw.Widget _buildRecommendations(
+    Map<String, double> expenseSummary,
+    List<Budget> budgets,
+  ) {
     final recommendations = <String>[];
-    final totalExpenses = expenseSummary.values.fold(0.0, (sum, amount) => sum + amount);
+    final totalExpenses = expenseSummary.values.fold(
+      0.0,
+      (sum, amount) => sum + amount,
+    );
 
     // Analyze spending patterns
     final transportSpending = expenseSummary['Transport'] ?? 0;
@@ -388,42 +489,63 @@ class PDFService {
     final mpesaSpending = expenseSummary['M-PESA'] ?? 0;
 
     if (transportSpending > totalExpenses * 0.2) {
-      recommendations.add('Consider using public transport more often to reduce transport costs');
+      recommendations.add(
+        'Consider using public transport more often to reduce transport costs',
+      );
     }
 
     if (foodSpending > totalExpenses * 0.3) {
-      recommendations.add('Try meal planning and cooking at home to reduce food expenses');
+      recommendations.add(
+        'Try meal planning and cooking at home to reduce food expenses',
+      );
     }
 
     if (mpesaSpending > totalExpenses * 0.15) {
-      recommendations.add('Limit M-PESA transaction fees by consolidating transfers');
+      recommendations.add(
+        'Limit M-PESA transaction fees by consolidating transfers',
+      );
     }
 
     final exceededBudgets = budgets.where((b) => b.isExceeded).length;
     if (exceededBudgets > 0) {
-      recommendations.add('Review and adjust $exceededBudgets exceeded budget(s)');
+      recommendations.add(
+        'Review and adjust $exceededBudgets exceeded budget(s)',
+      );
     }
 
-    final upcomingBills = budgets.where((b) => b.status == BudgetStatus.upcoming).length;
+    final upcomingBills = budgets
+        .where((b) => b.status == BudgetStatus.upcoming)
+        .length;
     if (upcomingBills > 0) {
-      recommendations.add('Prepare for $upcomingBills upcoming budget(s) starting soon');
+      recommendations.add(
+        'Prepare for $upcomingBills upcoming budget(s) starting soon',
+      );
     }
 
     return pw.Container(
       child: pw.Column(
         crossAxisAlignment: pw.CrossAxisAlignment.start,
         children: [
-          pw.Text('FINANCIAL RECOMMENDATIONS', style: pw.Theme.of(context).header2),
+          pw.Text(
+            'FINANCIAL RECOMMENDATIONS',
+            style: pw.Theme.of(context).header2,
+          ),
           pw.SizedBox(height: 10),
           if (recommendations.isEmpty)
-            pw.Text('Great job! Your finances are well managed.', style: pw.TextStyle(fontStyle: pw.FontStyle.italic)),
+            pw.Text(
+              'Great job! Your finances are well managed.',
+              style: pw.TextStyle(fontStyle: pw.FontStyle.italic),
+            ),
           for (final recommendation in recommendations)
             pw.Padding(
               padding: const pw.EdgeInsets.only(bottom: 6),
               child: pw.Row(
                 crossAxisAlignment: pw.CrossAxisAlignment.start,
                 children: [
-                  pw.Text('• ', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+                  pw.Text(
+                    '• ',
+                    style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
+                  ),
                   pw.Expanded(child: pw.Text(recommendation)),
                 ],
               ),
@@ -432,7 +554,11 @@ class PDFService {
           pw.Center(
             child: pw.Text(
               'Generated by Pesa Planner - Your Kenyan Financial Companion',
-              style: pw.TextStyle(fontSize: 9, color: PdfColors.grey, fontStyle: pw.FontStyle.italic),
+              style: pw.TextStyle(
+                fontSize: 9,
+                color: PdfColors.grey,
+                fontStyle: pw.FontStyle.italic,
+              ),
             ),
           ),
         ],
@@ -450,7 +576,10 @@ class PDFService {
       ),
       child: pw.Column(
         children: [
-          pw.Text(title, style: pw.TextStyle(fontSize: 9, color: PdfColors.grey)),
+          pw.Text(
+            title,
+            style: pw.TextStyle(fontSize: 9, color: PdfColors.grey),
+          ),
           pw.SizedBox(height: 4),
           pw.Text(value, style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
         ],
@@ -469,7 +598,10 @@ class PDFService {
         children: [
           pw.Text(title, style: pw.TextStyle(fontSize: 9)),
           pw.SizedBox(height: 4),
-          pw.Text(value, style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 12)),
+          pw.Text(
+            value,
+            style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 12),
+          ),
         ],
       ),
     );
@@ -480,7 +612,10 @@ class PDFService {
   }
 
   // Generate budget-specific report
-  Future<pw.Document> generateBudgetReport(Budget budget, List<Expense> relatedExpenses) async {
+  Future<pw.Document> generateBudgetReport(
+    Budget budget,
+    List<Expense> relatedExpenses,
+  ) async {
     final pdf = pw.Document();
 
     pdf.addPage(
@@ -488,7 +623,10 @@ class PDFService {
         pageFormat: PdfPageFormat.a4,
         theme: _kenyanTheme(),
         build: (context) => [
-          pw.Text('BUDGET REPORT: ${budget.name}', style: pw.Theme.of(context).header1),
+          pw.Text(
+            'BUDGET REPORT: ${budget.name}',
+            style: pw.Theme.of(context).header1,
+          ),
           pw.SizedBox(height: 10),
           _buildBudgetDetails(budget),
           pw.SizedBox(height: 15),
@@ -511,13 +649,19 @@ class PDFService {
       children: [
         _buildTableRow('Budget Name', budget.name),
         _buildTableRow('Category', budget.category),
-        _buildTableRow('Period', '${DateFormat('dd MMM yyyy').format(budget.startDate)} - ${DateFormat('dd MMM yyyy').format(budget.endDate)}'),
+        _buildTableRow(
+          'Period',
+          '${DateFormat('dd MMM yyyy').format(budget.startDate)} - ${DateFormat('dd MMM yyyy').format(budget.endDate)}',
+        ),
         _buildTableRow('Total Budget', budget.formattedAmount),
         _buildTableRow('Amount Spent', budget.formattedSpent),
         _buildTableRow('Amount Remaining', budget.formattedRemaining),
         _buildTableRow('Progress', '${budget.progressPercentage}%'),
         _buildTableRow('Status', budget.status.displayName),
-        _buildTableRow('Daily Budget', 'KSh ${budget.dailyBudget.toStringAsFixed(2)}'),
+        _buildTableRow(
+          'Daily Budget',
+          'KSh ${budget.dailyBudget.toStringAsFixed(2)}',
+        ),
         _buildTableRow('Days Remaining', '${budget.daysRemaining} days'),
       ],
     );
@@ -528,12 +672,12 @@ class PDFService {
       children: [
         pw.Padding(
           padding: const pw.EdgeInsets.all(8),
-          child: pw.Text(label, style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+          child: pw.Text(
+            label,
+            style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
+          ),
         ),
-        pw.Padding(
-          padding: const pw.EdgeInsets.all(8),
-          child: pw.Text(value),
-        ),
+        pw.Padding(padding: const pw.EdgeInsets.all(8), child: pw.Text(value)),
       ],
     );
   }
@@ -545,7 +689,10 @@ class PDFService {
         pw.Text('RELATED EXPENSES', style: pw.Theme.of(context).header2),
         pw.SizedBox(height: 10),
         if (expenses.isEmpty)
-          pw.Text('No expenses recorded for this budget.', style: pw.TextStyle(fontStyle: pw.FontStyle.italic)),
+          pw.Text(
+            'No expenses recorded for this budget.',
+            style: pw.TextStyle(fontStyle: pw.FontStyle.italic),
+          ),
         for (final expense in expenses.take(10))
           pw.Container(
             margin: const pw.EdgeInsets.only(bottom: 6),
@@ -556,27 +703,45 @@ class PDFService {
                   child: pw.Column(
                     crossAxisAlignment: pw.CrossAxisAlignment.start,
                     children: [
-                      pw.Text(expense.description.isNotEmpty ? expense.description : 'No description'),
-                      pw.Text(DateFormat('dd MMM yyyy').format(expense.date), style: pw.TextStyle(fontSize: 9, color: PdfColors.grey)),
+                      pw.Text(
+                        expense.description.isNotEmpty
+                            ? expense.description
+                            : 'No description',
+                      ),
+                      pw.Text(
+                        DateFormat('dd MMM yyyy').format(expense.date),
+                        style: pw.TextStyle(fontSize: 9, color: PdfColors.grey),
+                      ),
                     ],
                   ),
                 ),
-                pw.Text(formatKSH(expense.amount), style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+                pw.Text(
+                  formatKSH(expense.amount),
+                  style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
+                ),
               ],
             ),
           ),
         if (expenses.length > 10)
           pw.Padding(
             padding: const pw.EdgeInsets.only(top: 8),
-            child: pw.Text('+ ${expenses.length - 10} more expenses...', style: pw.TextStyle(fontSize: 9)),
+            child: pw.Text(
+              '+ ${expenses.length - 10} more expenses...',
+              style: pw.TextStyle(fontSize: 9),
+            ),
           ),
       ],
     );
   }
 
   pw.Widget _buildBudgetInsights(Budget budget, List<Expense> expenses) {
-    final totalExpenses = expenses.fold(0.0, (sum, expense) => sum + expense.amount);
-    final averageExpense = expenses.isNotEmpty ? totalExpenses / expenses.length : 0;
+    final totalExpenses = expenses.fold(
+      0.0,
+      (sum, expense) => sum + expense.amount,
+    );
+    final averageExpense = expenses.isNotEmpty
+        ? totalExpenses / expenses.length
+        : 0;
     final daysElapsed = budget.daysElapsed;
     final dailyAverage = daysElapsed > 0 ? totalExpenses / daysElapsed : 0;
 
@@ -593,7 +758,10 @@ class PDFService {
             children: [
               _buildInsightCard('Total Expenses', formatKSH(totalExpenses)),
               _buildInsightCard('Number of Expenses', '${expenses.length}'),
-              _buildInsightCard('Average per Expense', formatKSH(averageExpense)),
+              _buildInsightCard(
+                'Average per Expense',
+                formatKSH(averageExpense),
+              ),
               _buildInsightCard('Daily Average', formatKSH(dailyAverage)),
             ],
           ),
@@ -625,11 +793,18 @@ class PDFService {
       child: pw.Column(
         mainAxisAlignment: pw.MainAxisAlignment.center,
         children: [
-          pw.Text(title, style: pw.TextStyle(fontSize: 9, color: PdfColors.grey)),
+          pw.Text(
+            title,
+            style: pw.TextStyle(fontSize: 9, color: PdfColors.grey),
+          ),
           pw.SizedBox(height: 4),
           pw.Text(value, style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
         ],
       ),
     );
   }
+}
+
+extension on PdfColor {
+  PdfColor? withOpacity(double d) {}
 }
