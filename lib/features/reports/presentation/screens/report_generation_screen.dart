@@ -382,4 +382,6 @@ class _ReportGenerationScreenState extends State<ReportGenerationScreen> {
   }
 }
 
-class KPLCService {}
+class KPLCService {
+  getKPLCBills(String userId) {}
+}
