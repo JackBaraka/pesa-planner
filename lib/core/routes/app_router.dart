@@ -102,8 +102,7 @@ class AppRouter {
                   ),
                   const SizedBox(height: 20),
                   ElevatedButton(
-                    onPressed: () =>
-                        Navigator.of(settings.context!).pushNamed('/'),
+                    onPressed: () => Navigator.of(context).pushNamed('/'),
                     child: const Text('Go to Home'),
                   ),
                 ],
