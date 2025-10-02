@@ -21,6 +21,8 @@ import 'package:pesa_planner/features/utilities/presentation/screens/kplc_bills_
 import 'package:pesa_planner/features/utilities/presentation/screens/utilities_dashboard.dart';
 
 class AppRouter {
+  static Null get context => null;
+
   static Route<dynamic> generateRoute(RouteSettings settings) {
     switch (settings.name) {
       // Authentication Routes
@@ -115,8 +117,6 @@ class AppRouter {
 }
 
 // Removed redundant and unused 'context' declarations
-
-class _ {}
 
 class MpesaHistoryScreen extends StatelessWidget {
   const MpesaHistoryScreen({super.key});
