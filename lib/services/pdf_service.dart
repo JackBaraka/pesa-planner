@@ -1,4 +1,6 @@
-﻿import 'package:flutter/services.dart' show rootBundle;
+﻿// ignore_for_file: depend_on_referenced_packages
+
+import 'package:flutter/services.dart' show rootBundle;
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:pesa_planner/core/utils/currency_formatter.dart';
@@ -806,5 +808,7 @@ class PDFService {
 }
 
 extension on PdfColor {
-  PdfColor? withOpacity(double d) {}
+  PdfColor? withOpacity(double d) {
+    return null;
+  }
 }
