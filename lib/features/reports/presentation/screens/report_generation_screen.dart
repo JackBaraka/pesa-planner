@@ -36,14 +36,23 @@ class _ReportGenerationScreenState extends State<ReportGenerationScreen> {
 
     try {
       final pdfService = PDFService();
-      final databaseService = Provider.of<DatabaseService>(context, listen: false);
-      final mpesaService = Provider.of<MpesaTransactionService>(context, listen: false);
+      final databaseService = Provider.of<DatabaseService>(
+        context,
+        listen: false,
+      );
+      final mpesaService = Provider.of<MpesaTransactionService>(
+        context,
+        listen: false,
+      );
       final kplcService = Provider.of<KPLCService>(context, listen: false);
 
       // Fetch data for the selected period
       final budgets = await _getBudgetsInPeriod(userId, databaseService);
       final expenses = await _getExpensesInPeriod(userId, databaseService);
-      final mpesaTransactions = await _getMpesaTransactionsInPeriod(userId, mpesaService);
+      final mpesaTransactions = await _getMpesaTransactionsInPeriod(
+        userId,
+        mpesaService,
+      );
       final kplcBills = await _getKPLCBillsInPeriod(userId, kplcService);
 
       // Calculate summaries
@@ -63,62 +72,85 @@ class _ReportGenerationScreenState extends State<ReportGenerationScreen> {
       );
 
       // Share or print the PDF
-      await Printing.sharePdf(bytes: await pdf.save(), filename: 'pesa-planner-report.pdf');
+      await Printing.sharePdf(
+        bytes: await pdf.save(),
+        filename: 'pesa-planner-report.pdf',
+      );
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Report generated successfully')),
       );
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error generating report: $e')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error generating report: $e')));
     } finally {
       setState(() => _isGenerating = false);
     }
   }
 
-  Future<List<Budget>> _getBudgetsInPeriod(String userId, DatabaseService service) async {
+  Future<List<Budget>> _getBudgetsInPeriod(
+    String userId,
+    DatabaseService service,
+  ) async {
     // This is a simplified implementation
     // You might need to modify your DatabaseService to support date filtering
     final budgets = await service.getBudgets(userId).first;
     return budgets.where((budget) {
-      return budget.startDate.isBefore(_endDate) && budget.endDate.isAfter(_startDate);
+      return budget.startDate.isBefore(_endDate) &&
+          budget.endDate.isAfter(_startDate);
     }).toList();
   }
 
-  Future<List<Expense>> _getExpensesInPeriod(String userId, DatabaseService service) async {
+  Future<List<Expense>> _getExpensesInPeriod(
+    String userId,
+    DatabaseService service,
+  ) async {
     final expenses = await service.getExpenses(userId).first;
     return expenses.where((expense) {
-      return expense.date.isAfter(_startDate) && expense.date.isBefore(_endDate);
+      return expense.date.isAfter(_startDate) &&
+          expense.date.isBefore(_endDate);
     }).toList();
   }
 
-  Future<List<MpesaTransaction>> _getMpesaTransactionsInPeriod(String userId, MpesaTransactionService service) async {
+  Future<List<MpesaTransaction>> _getMpesaTransactionsInPeriod(
+    String userId,
+    MpesaTransactionService service,
+  ) async {
     final transactions = await service.getMpesaTransactions(userId).first;
     return transactions.where((transaction) {
-      return transaction.transactionDate.isAfter(_startDate) && transaction.transactionDate.isBefore(_endDate);
+      return transaction.transactionDate.isAfter(_startDate) &&
+          transaction.transactionDate.isBefore(_endDate);
     }).toList();
   }
 
-  Future<List<KPLCBill>> _getKPLCBillsInPeriod(String userId, KPLCService service) async {
+  Future<List<KPLCBill>> _getKPLCBillsInPeriod(
+    String userId,
+    KPLCService service,
+  ) async {
     final bills = await service.getKPLCBills(userId).first;
     return bills.where((bill) {
-      return bill.billDate.isAfter(_startDate) && bill.billDate.isBefore(_endDate);
+      return bill.billDate.isAfter(_startDate) &&
+          bill.billDate.isBefore(_endDate);
     }).toList();
   }
 
   Map<String, double> _calculateExpenseSummary(List<Expense> expenses) {
     final summary = <String, double>{};
     for (final expense in expenses) {
-      summary[expense.category] = (summary[expense.category] ?? 0) + expense.amount;
+      summary[expense.category] =
+          (summary[expense.category] ?? 0) + expense.amount;
     }
     return summary;
   }
 
-  Map<String, double> _calculateMpesaSummary(List<MpesaTransaction> transactions) {
+  Map<String, double> _calculateMpesaSummary(
+    List<MpesaTransaction> transactions,
+  ) {
     final summary = <String, double>{};
     for (final transaction in transactions.where((t) => t.isSuccessful)) {
-      summary[transaction.transactionType] = (summary[transaction.transactionType] ?? 0) + transaction.amount;
+      summary[transaction.transactionType] =
+          (summary[transaction.transactionType] ?? 0) + transaction.amount;
     }
     return summary;
   }
@@ -161,7 +193,10 @@ class _ReportGenerationScreenState extends State<ReportGenerationScreen> {
                   children: [
                     const Text(
                       'Report Type',
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                     const SizedBox(height: 12),
                     Wrap(
@@ -188,7 +223,10 @@ class _ReportGenerationScreenState extends State<ReportGenerationScreen> {
                   children: [
                     const Text(
                       'Report Period',
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                     const SizedBox(height: 12),
                     Row(
@@ -196,7 +234,9 @@ class _ReportGenerationScreenState extends State<ReportGenerationScreen> {
                         Expanded(
                           child: ListTile(
                             title: const Text('Start Date'),
-                            subtitle: Text(DateFormat.yMMMd().format(_startDate)),
+                            subtitle: Text(
+                              DateFormat.yMMMd().format(_startDate),
+                            ),
                             trailing: const Icon(Icons.calendar_today),
                             onTap: () => _selectDate(context, true),
                           ),
@@ -226,7 +266,10 @@ class _ReportGenerationScreenState extends State<ReportGenerationScreen> {
                   children: [
                     const Text(
                       'Quick Periods',
-                      style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                     const SizedBox(height: 12),
                     Wrap(
@@ -323,4 +366,12 @@ class _ReportGenerationScreenState extends State<ReportGenerationScreen> {
               break;
             case 'Last Month':
               _startDate = DateTime(now.year, now.month - 1, 1);
-              _endDate = DateTime(now.year, now
+              _endDate = DateTime(now.year, now.month, 0);
+              break;
+          }
+        });
+      },
+      backgroundColor: AppColors.kenyaGreen.withOpacity(0.1),
+    );
+  }
+}
