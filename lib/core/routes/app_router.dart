@@ -120,7 +120,7 @@ class AppRouter {
 class _ {}
 
 class MpesaHistoryScreen extends StatelessWidget {
-  const MpesaHistoryScreen({Key? key}) : super(key: key);
+  const MpesaHistoryScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -132,7 +132,7 @@ class MpesaHistoryScreen extends StatelessWidget {
 }
 
 class MpesaPaymentScreen extends StatelessWidget {
-  const MpesaPaymentScreen({Key? key}) : super(key: key);
+  const MpesaPaymentScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -144,7 +144,7 @@ class MpesaPaymentScreen extends StatelessWidget {
 }
 
 class KPLCBillsScreen extends StatelessWidget {
-  const KPLCBillsScreen({Key? key}) : super(key: key);
+  const KPLCBillsScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -156,7 +156,7 @@ class KPLCBillsScreen extends StatelessWidget {
 }
 
 class KPLCBillListScreen extends StatelessWidget {
-  const KPLCBillListScreen({Key? key}) : super(key: key);
+  const KPLCBillListScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -168,7 +168,7 @@ class KPLCBillListScreen extends StatelessWidget {
 }
 
 class UtilitiesDashboard extends StatelessWidget {
-  const UtilitiesDashboard({Key? key}) : super(key: key);
+  const UtilitiesDashboard({super.key});
 
   @override
   Widget build(BuildContext context) {
