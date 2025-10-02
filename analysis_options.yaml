@@ -10,6 +10,7 @@
 analyzer:
   errors:
     avoid_print: ignore
+    avoid_types_as_parameter_names: ignore
     deprecated_member_use: ignore
     unnecessary_null_comparison: ignore
     unused_import: ignore

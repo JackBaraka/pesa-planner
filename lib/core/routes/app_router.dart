@@ -1,4 +1,6 @@
-﻿import 'package:flutter/material.dart';
+﻿// ignore_for_file: avoid_types_as_parameter_names
+
+import 'package:flutter/material.dart';
 import 'package:pesa_planner/features/auth/presentation/screens/login_screen.dart';
 import 'package:pesa_planner/features/auth/presentation/screens/phone_verify_screen.dart';
 import 'package:pesa_planner/features/auth/presentation/screens/register_screen.dart';
@@ -100,7 +102,8 @@ class AppRouter {
                   ),
                   const SizedBox(height: 20),
                   ElevatedButton(
-                    onPressed: () => Navigator.pushNamed(_, '/'),
+                    onPressed: () =>
+                        Navigator.of(settings.context!).pushNamed('/'),
                     child: const Text('Go to Home'),
                   ),
                 ],
@@ -112,8 +115,20 @@ class AppRouter {
   }
 }
 
-class MpesaHistoryScreen {
-  const MpesaHistoryScreen();
+// Removed redundant and unused 'context' declarations
+
+class _ {}
+
+class MpesaHistoryScreen extends StatelessWidget {
+  const MpesaHistoryScreen({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('M-PESA History')),
+      body: const Center(child: Text('M-PESA History Screen')),
+    );
+  }
 }
 
 class MpesaPaymentScreen extends StatelessWidget {
@@ -128,14 +143,38 @@ class MpesaPaymentScreen extends StatelessWidget {
   }
 }
 
-class KPLCBillsScreen {
-  const KPLCBillsScreen();
+class KPLCBillsScreen extends StatelessWidget {
+  const KPLCBillsScreen({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Add KPLC Bill')),
+      body: const Center(child: Text('Add KPLC Bill Screen')),
+    );
+  }
 }
 
-class KPLCBillListScreen {
-  const KPLCBillListScreen();
+class KPLCBillListScreen extends StatelessWidget {
+  const KPLCBillListScreen({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('KPLC Bill List')),
+      body: const Center(child: Text('KPLC Bill List Screen')),
+    );
+  }
 }
 
-class UtilitiesDashboard {
-  const UtilitiesDashboard();
+class UtilitiesDashboard extends StatelessWidget {
+  const UtilitiesDashboard({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Utilities Dashboard')),
+      body: const Center(child: Text('Utilities Dashboard Screen')),
+    );
+  }
 }
