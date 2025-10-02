@@ -2,6 +2,10 @@
 
 import 'package:flutter/material.dart';
 import 'package:pesa_planner/core/theme/app_colors.dart';
+import 'package:pesa_planner/data/models/budget_model.dart' show Budget;
+import 'package:pesa_planner/data/models/expense_model.dart';
+import 'package:pesa_planner/data/models/kplc_bill_model.dart';
+import 'package:pesa_planner/data/models/mpesa_transaction_model.dart';
 import 'package:pesa_planner/services/pdf_service.dart';
 import 'package:pesa_planner/services/auth_service.dart';
 import 'package:pesa_planner/services/database_service.dart';
@@ -377,3 +381,5 @@ class _ReportGenerationScreenState extends State<ReportGenerationScreen> {
     );
   }
 }
+
+class KPLCService {}
