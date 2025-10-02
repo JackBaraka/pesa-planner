@@ -111,3 +111,7 @@ class AppRouter {
     }
   }
 }
+
+class UtilitiesDashboard {
+  const UtilitiesDashboard();
+}
