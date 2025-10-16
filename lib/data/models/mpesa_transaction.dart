@@ -196,7 +196,7 @@ extension on MpesaService {
     String phoneNumber,
   ) async {
     // Replace this with actual logic to fetch transactions
-    return Future.value([
+    return [
       {
         'type': 'Received',
         'sender': 'John Doe',
@@ -213,6 +213,6 @@ extension on MpesaService {
         'date': DateTime.now().subtract(const Duration(days: 1)),
         'amount': 500.0,
       },
-    ]);
+    ];
   }
 }
