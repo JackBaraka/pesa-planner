@@ -383,5 +383,9 @@ class _ReportGenerationScreenState extends State<ReportGenerationScreen> {
 }
 
 class KPLCService {
-  void getKPLCBills(String userId) {}
+  // Replace with your actual implementation to fetch KPLC bills
+  Stream<List<KPLCBill>> getKPLCBills(String userId) {
+    // Example stub: replace with real data source
+    return Stream.value(<KPLCBill>[]);
+  }
 }
