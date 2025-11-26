@@ -39,7 +39,7 @@ class _MpesaTransactionsScreenState extends State<MpesaTransactionsScreen> {
       Provider.of<AuthService>(context, listen: false);
       final mpesaService = Provider.of<MpesaService>(context, listen: false);
 
-      final transactions = await mpesaService.fetchTransactions(
+      final transactions = await mpesaService.fetchTransactionsMock(
         _phoneController.text,
       );
 
@@ -191,8 +191,8 @@ class _MpesaTransactionsScreenState extends State<MpesaTransactionsScreen> {
   }
 }
 
-extension on MpesaService {
-  Future<List<Map<String, dynamic>>> fetchTransactions(
+extension MpesaServiceMock on MpesaService {
+  Future<List<Map<String, dynamic>>> fetchTransactionsMock(
     String phoneNumber,
   ) async {
     // Replace this with actual logic to fetch transactions
