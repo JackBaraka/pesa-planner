@@ -647,9 +647,7 @@ class PDFService {
 
   pw.Widget _buildBudgetDetails(Budget budget) {
     // Ensure numeric fields are converted to double where needed
-    final dailyBudgetString = (budget.dailyBudget is num)
-        ? (budget.dailyBudget as num).toDouble().toStringAsFixed(2)
-        : budget.dailyBudget.toString();
+    final dailyBudgetString = (budget.dailyBudget).toDouble().toStringAsFixed(2);
 
     return pw.Table(
       border: pw.TableBorder.all(),
