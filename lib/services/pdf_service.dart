@@ -32,7 +32,7 @@ class PDFService {
         pageFormat: PdfPageFormat.a4,
         theme: await _kenyanTheme(),
         build: (context) => [
-          _buildHeader(userName, startDate, endDate),
+          _buildHeader(userName, startDate, endDate, context),
           _buildExecutiveSummary(expenseSummary, mpesaSummary, budgets),
           _buildExpenseAnalysis(expenses, expenseSummary),
           _buildBudgetPerformance(budgets),
@@ -623,7 +623,7 @@ class PDFService {
     pdf.addPage(
       pw.MultiPage(
         pageFormat: PdfPageFormat.a4,
-        theme: _kenyanTheme(),
+        theme: await _kenyanTheme(),
         build: (context) => [
           pw.Text(
             'BUDGET REPORT: ${budget.name}',
@@ -808,7 +808,9 @@ class PDFService {
 }
 
 extension on PdfColor {
-  PdfColor? withOpacity(double d) {
-    return null;
+  PdfColor withOpacity(double d) {
+    // The pdf PdfColor does not provide a direct opacity modifier here;
+    // return the same color for compatibility with callers.
+    return this;
   }
 }
