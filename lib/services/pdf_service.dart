@@ -11,7 +11,7 @@ import 'package:pesa_planner/data/models/kplc_bill_model.dart';
 import 'package:intl/intl.dart';
 
 class PDFService {
-  Null get context => null;
+  // Removed the `Null get context => null;` which caused Null -> Context assignment errors.
 
   // Generate comprehensive financial report
   Future<pw.Document> generateFinancialReport({
@@ -31,14 +31,15 @@ class PDFService {
       pw.MultiPage(
         pageFormat: PdfPageFormat.a4,
         theme: await _kenyanTheme(),
+        // pass the pw.Context from the builder into helper functions that need it
         build: (context) => [
           _buildHeader(userName, startDate, endDate, context),
-          _buildExecutiveSummary(expenseSummary, mpesaSummary, budgets),
-          _buildExpenseAnalysis(expenses, expenseSummary),
-          _buildBudgetPerformance(budgets),
-          _buildMpesaAnalysis(mpesaTransactions, mpesaSummary),
-          _buildUtilityAnalysis(kplcBills),
-          _buildRecommendations(expenseSummary, budgets),
+          _buildExecutiveSummary(expenseSummary, mpesaSummary, budgets, context),
+          _buildExpenseAnalysis(expenses, expenseSummary, context),
+          _buildBudgetPerformance(budgets, context),
+          _buildMpesaAnalysis(mpesaTransactions, mpesaSummary, context),
+          _buildUtilityAnalysis(kplcBills, context),
+          _buildRecommendations(expenseSummary, budgets, context),
         ],
       ),
     );
@@ -131,6 +132,7 @@ class PDFService {
     Map<String, double> expenseSummary,
     Map<String, double> mpesaSummary,
     List<Budget> budgets,
+    pw.Context context,
   ) {
     final totalExpenses = expenseSummary.values.fold(
       0.0,
@@ -141,9 +143,8 @@ class PDFService {
       (sum, amount) => sum + amount,
     );
     final activeBudgets = budgets.where((b) => b.isActive).length;
-    final completedBudgets = budgets
-        .where((b) => b.status == BudgetStatus.completed)
-        .length;
+    final completedBudgets =
+        budgets.where((b) => b.status == BudgetStatus.completed).length;
 
     return pw.Container(
       margin: const pw.EdgeInsets.only(bottom: 15),
@@ -171,9 +172,12 @@ class PDFService {
   pw.Widget _buildExpenseAnalysis(
     List<Expense> expenses,
     Map<String, double> summary,
+    pw.Context context,
   ) {
     final sortedSummary = summary.entries.toList()
       ..sort((a, b) => b.value.compareTo(a.value));
+
+    final total = summary.values.fold(0.0, (sum, amount) => sum + amount);
 
     return pw.Container(
       margin: const pw.EdgeInsets.only(bottom: 15),
@@ -227,7 +231,7 @@ class PDFService {
                     pw.Padding(
                       padding: const pw.EdgeInsets.all(6),
                       child: pw.Text(
-                        '${_calculatePercentage(entry.value, summary.values.fold(0.0, (sum, amount) => sum + amount)).toStringAsFixed(1)}%',
+                        '${_calculatePercentage(entry.value, total).toStringAsFixed(1)}%',
                       ),
                     ),
                   ],
@@ -248,7 +252,7 @@ class PDFService {
   }
 
   // Budget performance section
-  pw.Widget _buildBudgetPerformance(List<Budget> budgets) {
+  pw.Widget _buildBudgetPerformance(List<Budget> budgets, pw.Context context) {
     final activeBudgets = budgets.where((b) => b.isActive).toList();
 
     return pw.Container(
@@ -288,10 +292,11 @@ class PDFService {
                     ],
                   ),
                   pw.SizedBox(height: 4),
+                  // Simple fixed-width progress bar (avoids multiplying double.infinity)
                   pw.Stack(
                     children: [
                       pw.Container(
-                        width: double.infinity,
+                        width: 200,
                         height: 8,
                         decoration: pw.BoxDecoration(
                           color: PdfColors.grey300,
@@ -299,8 +304,9 @@ class PDFService {
                         ),
                       ),
                       pw.Container(
-                        width:
-                            double.infinity * (budget.progress.clamp(0.0, 1.0)),
+                        // budget.progress may be a num; convert safely to double and clamp
+                        width: 200 *
+                            (budget.progress.clamp(0.0, 1.0) as num).toDouble(),
                         height: 8,
                         decoration: pw.BoxDecoration(
                           color: budget.isExceeded
@@ -337,10 +343,9 @@ class PDFService {
   pw.Widget _buildMpesaAnalysis(
     List<MpesaTransaction> transactions,
     Map<String, double> summary,
+    pw.Context context,
   ) {
-    final successfulTransactions = transactions
-        .where((t) => t.isSuccessful)
-        .toList();
+    final successfulTransactions = transactions.where((t) => t.isSuccessful).toList();
     final sortedSummary = summary.entries.toList()
       ..sort((a, b) => b.value.compareTo(a.value));
 
@@ -415,7 +420,7 @@ class PDFService {
   }
 
   // Utility bills analysis
-  pw.Widget _buildUtilityAnalysis(List<KPLCBill> bills) {
+  pw.Widget _buildUtilityAnalysis(List<KPLCBill> bills, pw.Context context) {
     final paidBills = bills.where((b) => b.isPaid).toList();
     final overdueBills = bills.where((b) => b.isOverdue).toList();
     final totalPaid = paidBills.fold(0.0, (sum, bill) => sum + bill.amount);
@@ -478,6 +483,7 @@ class PDFService {
   pw.Widget _buildRecommendations(
     Map<String, double> expenseSummary,
     List<Budget> budgets,
+    pw.Context context,
   ) {
     final recommendations = <String>[];
     final totalExpenses = expenseSummary.values.fold(
@@ -515,9 +521,7 @@ class PDFService {
       );
     }
 
-    final upcomingBills = budgets
-        .where((b) => b.status == BudgetStatus.upcoming)
-        .length;
+    final upcomingBills = budgets.where((b) => b.status == BudgetStatus.upcoming).length;
     if (upcomingBills > 0) {
       recommendations.add(
         'Prepare for $upcomingBills upcoming budget(s) starting soon',
@@ -632,8 +636,8 @@ class PDFService {
           pw.SizedBox(height: 10),
           _buildBudgetDetails(budget),
           pw.SizedBox(height: 15),
-          _buildBudgetExpenses(relatedExpenses),
-          _buildBudgetInsights(budget, relatedExpenses),
+          _buildBudgetExpenses(relatedExpenses, context),
+          _buildBudgetInsights(budget, relatedExpenses, context),
         ],
       ),
     );
@@ -642,6 +646,11 @@ class PDFService {
   }
 
   pw.Widget _buildBudgetDetails(Budget budget) {
+    // Ensure numeric fields are converted to double where needed
+    final dailyBudgetString = (budget.dailyBudget is num)
+        ? (budget.dailyBudget as num).toDouble().toStringAsFixed(2)
+        : budget.dailyBudget.toString();
+
     return pw.Table(
       border: pw.TableBorder.all(),
       columnWidths: {
@@ -662,7 +671,7 @@ class PDFService {
         _buildTableRow('Status', budget.status.displayName),
         _buildTableRow(
           'Daily Budget',
-          'KSh ${budget.dailyBudget.toStringAsFixed(2)}',
+          'KSh $dailyBudgetString',
         ),
         _buildTableRow('Days Remaining', '${budget.daysRemaining} days'),
       ],
@@ -684,7 +693,7 @@ class PDFService {
     );
   }
 
-  pw.Widget _buildBudgetExpenses(List<Expense> expenses) {
+  pw.Widget _buildBudgetExpenses(List<Expense> expenses, pw.Context context) {
     return pw.Column(
       crossAxisAlignment: pw.CrossAxisAlignment.start,
       children: [
@@ -736,14 +745,12 @@ class PDFService {
     );
   }
 
-  pw.Widget _buildBudgetInsights(Budget budget, List<Expense> expenses) {
+  pw.Widget _buildBudgetInsights(Budget budget, List<Expense> expenses, pw.Context context) {
     final totalExpenses = expenses.fold(
       0.0,
       (sum, expense) => sum + expense.amount,
     );
-    final averageExpense = expenses.isNotEmpty
-        ? totalExpenses / expenses.length
-        : 0;
+    final averageExpense = expenses.isNotEmpty ? totalExpenses / expenses.length : 0;
     final daysElapsed = budget.daysElapsed;
     final dailyAverage = daysElapsed > 0 ? totalExpenses / daysElapsed : 0;
 
