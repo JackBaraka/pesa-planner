@@ -750,9 +750,9 @@ class PDFService {
       0.0,
       (sum, expense) => sum + expense.amount,
     );
-    final averageExpense = expenses.isNotEmpty ? totalExpenses / expenses.length : 0;
+    final averageExpense = expenses.isNotEmpty ? totalExpenses / expenses.length : 0.0;
     final daysElapsed = budget.daysElapsed;
-    final dailyAverage = daysElapsed > 0 ? totalExpenses / daysElapsed : 0;
+    final dailyAverage = daysElapsed > 0 ? totalExpenses / daysElapsed : 0.0;
 
     return pw.Container(
       margin: const pw.EdgeInsets.only(top: 15),
