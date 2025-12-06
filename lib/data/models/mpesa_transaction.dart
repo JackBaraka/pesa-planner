@@ -61,8 +61,7 @@ class _MpesaTransactionsScreenState extends State<MpesaTransactionsScreen> {
 
     if (authService.isInitialized == null || !authService.isInitialized!) {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
-    }
-
+    } 
     if (authService.currentUser == null) {
       return const Scaffold(
         body: Center(child: Text('Please log in to view M-PESA transactions')),
