@@ -59,7 +59,7 @@ class _MpesaTransactionsScreenState extends State<MpesaTransactionsScreen> {
   Widget build(BuildContext context) {
     final authService = Provider.of<AuthService>(context);
 
-    if (authService.isInitialized == null || !authService.isInitialized!) {
+    if (!authService.isInitialized) {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     } 
     if (authService.currentUser == null) {

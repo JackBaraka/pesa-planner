@@ -6,6 +6,10 @@ import 'package:pesa_planner/features/auth/presentation/screens/login_screen.dar
 import 'package:pesa_planner/features/dashboard/home_screen.dart'
     show HomeScreen;
 import 'package:pesa_planner/services/auth_service.dart';
+import 'package:pesa_planner/services/database_service.dart';
+import 'package:pesa_planner/services/expense_service.dart';
+import 'package:pesa_planner/services/mpesa_transaction_service.dart';
+import 'package:pesa_planner/services/transport_service.dart';
 import 'package:provider/provider.dart';
 
 class AppWidget extends StatelessWidget {
@@ -13,25 +17,30 @@ class AppWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (context) => AuthService(),
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider<AuthService>(create: (_) => AuthService()),
+        Provider<DatabaseService>(create: (_) => DatabaseService()),
+        Provider<ExpenseService>(create: (_) => ExpenseService()),
+        Provider<TransportService>(create: (_) => TransportService()),
+        Provider<MpesaTransactionService>(
+          create: (_) => MpesaTransactionService(),
+        ),
+      ],
       child: Consumer<AuthService>(
         builder: (context, authService, child) {
-          // Handle authentication state
           Widget homeScreen;
 
-          if (!(authService.isInitialized ?? false)) {
-            // Show splash screen while initializing
+          if (!authService.isInitialized) {
             homeScreen = const SplashScreen();
           } else if (authService.currentUser == null) {
-            // Redirect to login if not authenticated
             homeScreen = const LoginScreen();
           } else {
-            // Go to home screen if authenticated
             homeScreen = const HomeScreen();
           }
 
           return MaterialApp(
+            navigatorKey: navigatorKey,
             title: 'Pesa Planner',
             theme: kenyanTheme,
             debugShowCheckedModeBanner: false,

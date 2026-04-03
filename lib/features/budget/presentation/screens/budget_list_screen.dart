@@ -15,7 +15,7 @@ class BudgetListScreen extends StatelessWidget {
     final authService = Provider.of<AuthService>(context);
 
     // Show loading while auth is initializing
-    if (authService.isInitialized == null || !authService.isInitialized!) {
+    if (!authService.isInitialized) {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 

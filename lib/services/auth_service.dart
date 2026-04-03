@@ -10,6 +10,7 @@ import 'package:provider/provider.dart';
 class AuthService with ChangeNotifier {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   User? _currentUser;
+  bool _initialized = false;
 
   AuthService() {
     _auth.authStateChanges().listen(_authStateChanged);
@@ -17,12 +18,16 @@ class AuthService with ChangeNotifier {
 
   void _authStateChanged(User? user) {
     _currentUser = user;
+    if (!_initialized) {
+      _initialized = true;
+    }
     notifyListeners();
   }
 
   User? get currentUser => _currentUser;
 
-  get isInitialized => null;
+  /// True after [FirebaseAuth.authStateChanges] emits its first event (current user or null).
+  bool get isInitialized => _initialized;
 
   // Email sign-up with error message return
   Future<String?> signUpWithEmail(String email, String password) async {
