@@ -13,11 +13,42 @@ class BudgetCreationScreen extends StatefulWidget {
 }
 
 class _BudgetCreationScreenState extends State<BudgetCreationScreen> {
+  final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _amountController = TextEditingController();
+  final _descriptionController = TextEditingController();
   String _selectedCategory = Budget.kenyanCategories[0];
   DateTime _startDate = DateTime.now();
   DateTime _endDate = DateTime.now().add(const Duration(days: 30));
+  bool _monthlyRollover = false;
+
+  // Existing budget for edit mode
+  final Budget? _existingBudget;
+
+  BudgetCreationScreen({super.key, Budget? existingBudget})
+      : _existingBudget = existingBudget;
+
+  @override
+  void initState() {
+    super.initState();
+    if (_existingBudget != null) {
+      _nameController.text = _existingBudget!.name;
+      _amountController.text = _existingBudget!.amount.toString();
+      _descriptionController.text = _existingBudget!.description ?? '';
+      _selectedCategory = _existingBudget!.category;
+      _startDate = _existingBudget!.startDate;
+      _endDate = _existingBudget!.endDate;
+      _monthlyRollover = _existingBudget!.monthlyRollover;
+    }
+  }
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _amountController.dispose();
+    _descriptionController.dispose();
+    super.dispose();
+  }
 
   Future<void> _selectDate(BuildContext context, bool isStartDate) async {
     final DateTime? picked = await showDatePicker(
@@ -30,6 +61,10 @@ class _BudgetCreationScreenState extends State<BudgetCreationScreen> {
       setState(() {
         if (isStartDate) {
           _startDate = picked;
+          // Auto-adjust end date if it's before start
+          if (_endDate.isBefore(_startDate)) {
+            _endDate = _startDate.add(const Duration(days: 30));
+          }
         } else {
           _endDate = picked;
         }
@@ -37,125 +72,291 @@ class _BudgetCreationScreenState extends State<BudgetCreationScreen> {
     }
   }
 
-  Future<void> _createBudget(BuildContext context) async {
-    if (_nameController.text.isEmpty || _amountController.text.isEmpty) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Please fill all fields')));
+  String? _validateName(String? value) {
+    if (value == null || value.trim().isEmpty) {
+      return 'Budget name is required';
+    }
+    if (value.trim().length < 2) {
+      return 'Budget name must be at least 2 characters';
+    }
+    return null;
+  }
+
+  String? _validateAmount(String? value) {
+    if (value == null || value.trim().isEmpty) {
+      return 'Amount is required';
+    }
+    final amount = double.tryParse(value);
+    if (amount == null) {
+      return 'Please enter a valid number';
+    }
+    if (amount <= 0) {
+      return 'Amount must be a positive number';
+    }
+    if (amount > 10000000) {
+      return 'Amount cannot exceed KSh 10,000,000';
+    }
+    return null;
+  }
+
+  Future<void> _saveBudget(BuildContext context) async {
+    if (!_formKey.currentState!.validate()) {
       return;
     }
 
     final budget = Budget(
-      id: DateTime.now().millisecondsSinceEpoch.toString(),
-      name: _nameController.text,
-      amount: double.parse(_amountController.text),
+      id: _existingBudget?.id ?? DateTime.now().millisecondsSinceEpoch.toString(),
+      name: _nameController.text.trim(),
+      amount: double.parse(_amountController.text.trim()),
       category: _selectedCategory,
+      description: _descriptionController.text.trim().isEmpty
+          ? null
+          : _descriptionController.text.trim(),
       startDate: _startDate,
       endDate: _endDate,
-      createdAt: DateTime.now(),
+      spent: _existingBudget?.spent ?? 0.0,
+      isRecurring: _monthlyRollover,
+      monthlyRollover: _monthlyRollover,
+      createdAt: _existingBudget?.createdAt ?? DateTime.now(),
+      updatedAt: DateTime.now(),
     );
 
     final userId = Provider.of<AuthService>(
       context,
       listen: false,
     ).currentUser?.uid;
+
     if (userId != null) {
-      await Provider.of<DatabaseService>(
-        context,
-        listen: false,
-      ).addBudget(userId, budget);
-      // ignore: use_build_context_synchronously
-      Navigator.pop(context);
+      final db = Provider.of<DatabaseService>(context, listen: false);
+      String? error;
+
+      if (_existingBudget != null) {
+        error = await db.updateBudget(userId, budget);
+      } else {
+        error = await db.addBudget(userId, budget);
+      }
+
+      if (error != null) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Error: $error')),
+          );
+        }
+      } else {
+        if (mounted) {
+          Navigator.pop(context);
+        }
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final isEditing = _existingBudget != null;
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Create Budget'),
+        title: Text(isEditing ? 'Edit Budget' : 'Create Budget'),
         backgroundColor: AppColors.kenyaGreen,
       ),
-      body: Padding(
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(20.0),
-        child: Column(
-          children: [
-            TextField(
-              controller: _nameController,
-              decoration: const InputDecoration(
-                labelText: 'Budget Name',
-                prefixIcon: Icon(Icons.edit),
-                border: OutlineInputBorder(),
+        child: Form(
+          key: _formKey,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // Budget Name
+              TextFormField(
+                controller: _nameController,
+                decoration: const InputDecoration(
+                  labelText: 'Budget Name *',
+                  prefixIcon: Icon(Icons.edit),
+                  border: OutlineInputBorder(),
+                  hintText: 'e.g., Monthly Groceries',
+                ),
+                validator: _validateName,
+                textCapitalization: TextCapitalization.words,
               ),
-            ),
-            const SizedBox(height: 20),
-            TextField(
-              controller: _amountController,
-              decoration: const InputDecoration(
-                labelText: 'Amount (KSh)',
-                prefixIcon: Icon(Icons.attach_money),
-                border: OutlineInputBorder(),
+              const SizedBox(height: 20),
+
+              // Amount
+              TextFormField(
+                controller: _amountController,
+                decoration: const InputDecoration(
+                  labelText: 'Amount (KSh) *',
+                  prefixIcon: Icon(Icons.attach_money),
+                  border: OutlineInputBorder(),
+                  hintText: 'e.g., 5000',
+                ),
+                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                validator: _validateAmount,
               ),
-              keyboardType: TextInputType.number,
-            ),
-            const SizedBox(height: 20),
-            DropdownButtonFormField<String>(
-              value: _selectedCategory,
-              items: Budget.kenyanCategories.map((category) {
-                return DropdownMenuItem(value: category, child: Text(category));
-              }).toList(),
-              onChanged: (value) {
-                if (value != null) {
-                  setState(() => _selectedCategory = value);
-                }
-              },
-              decoration: const InputDecoration(
-                labelText: 'Category',
-                prefixIcon: Icon(Icons.category),
-                border: OutlineInputBorder(),
+              const SizedBox(height: 20),
+
+              // Category
+              DropdownButtonFormField<String>(
+                value: _selectedCategory,
+                items: Budget.kenyanCategories.map((category) {
+                  return DropdownMenuItem(value: category, child: Text(category));
+                }).toList(),
+                onChanged: (value) {
+                  if (value != null) {
+                    setState(() => _selectedCategory = value);
+                  }
+                },
+                decoration: const InputDecoration(
+                  labelText: 'Category',
+                  prefixIcon: Icon(Icons.category),
+                  border: OutlineInputBorder(),
+                ),
               ),
-            ),
-            const SizedBox(height: 20),
-            Row(
-              children: [
-                Expanded(
-                  child: ListTile(
-                    title: const Text('Start Date'),
-                    subtitle: Text(
-                      '${_startDate.day}/${_startDate.month}/${_startDate.year}',
-                    ),
-                    trailing: IconButton(
-                      icon: const Icon(Icons.calendar_today),
-                      onPressed: () => _selectDate(context, true),
+              const SizedBox(height: 20),
+
+              // Description (optional)
+              TextFormField(
+                controller: _descriptionController,
+                decoration: const InputDecoration(
+                  labelText: 'Description (optional)',
+                  prefixIcon: Icon(Icons.description),
+                  border: OutlineInputBorder(),
+                  hintText: 'Add notes about this budget',
+                ),
+                maxLines: 2,
+              ),
+              const SizedBox(height: 20),
+
+              // Date Pickers
+              Row(
+                children: [
+                  Expanded(
+                    child: ListTile(
+                      contentPadding: EdgeInsets.zero,
+                      title: const Text('Start Date'),
+                      subtitle: Text(
+                        '${_startDate.day}/${_startDate.month}/${_startDate.year}',
+                        style: const TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      trailing: IconButton(
+                        icon: const Icon(Icons.calendar_today, color: AppColors.kenyaGreen),
+                        onPressed: () => _selectDate(context, true),
+                      ),
                     ),
                   ),
-                ),
-                Expanded(
-                  child: ListTile(
-                    title: const Text('End Date'),
-                    subtitle: Text(
-                      '${_endDate.day}/${_endDate.month}/${_endDate.year}',
-                    ),
-                    trailing: IconButton(
-                      icon: const Icon(Icons.calendar_today),
-                      onPressed: () => _selectDate(context, false),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: ListTile(
+                      contentPadding: EdgeInsets.zero,
+                      title: const Text('End Date'),
+                      subtitle: Text(
+                        '${_endDate.day}/${_endDate.month}/${_endDate.year}',
+                        style: const TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      trailing: IconButton(
+                        icon: const Icon(Icons.calendar_today, color: AppColors.kenyaGreen),
+                        onPressed: () => _selectDate(context, false),
+                      ),
                     ),
                   ),
-                ),
-              ],
-            ),
-            const Spacer(),
-            ElevatedButton(
-              onPressed: () => _createBudget(context),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.kenyaGreen,
-                minimumSize: const Size(double.infinity, 50),
+                ],
               ),
-              child: const Text('CREATE BUDGET'),
-            ),
-          ],
+              const SizedBox(height: 16),
+
+              // Monthly Rollover Switch
+              Card(
+                child: SwitchListTile(
+                  title: const Text('Monthly Rollover'),
+                  subtitle: const Text(
+                    'Carry over unused budget to next month',
+                    style: TextStyle(fontSize: 12),
+                  ),
+                  value: _monthlyRollover,
+                  activeColor: AppColors.kenyaGreen,
+                  onChanged: (value) {
+                    setState(() => _monthlyRollover = value);
+                  },
+                ),
+              ),
+              const SizedBox(height: 16),
+
+              // Budget Summary Preview
+              Card(
+                color: AppColors.kenyaGreen.withOpacity(0.1),
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Budget Summary',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
+                      ),
+                      const Divider(),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const Text('Duration:'),
+                          Text(
+                            '${_endDate.difference(_startDate).inDays + 1} days',
+                            style: const TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                        ],
+                      ),
+                      if (_amountController.text.isNotEmpty) ...[
+                        const SizedBox(height: 8),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            const Text('Daily Budget:'),
+                            Text(
+                              'KSh ${_formatNumber(_calculateDailyBudget())}',
+                              style: const TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 24),
+
+              // Submit Button
+              ElevatedButton(
+                onPressed: () => _saveBudget(context),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.kenyaGreen,
+                  minimumSize: const Size(double.infinity, 50),
+                ),
+                child: Text(
+                  isEditing ? 'UPDATE BUDGET' : 'CREATE BUDGET',
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
+  }
+
+  double _calculateDailyBudget() {
+    final amount = double.tryParse(_amountController.text) ?? 0;
+    final days = _endDate.difference(_startDate).inDays + 1;
+    return days > 0 ? amount / days : 0;
+  }
+
+  String _formatNumber(double value) {
+    return value.toStringAsFixed(2).replaceAllMapped(
+          RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
+          (Match m) => '${m[1]},',
+        );
   }
 }

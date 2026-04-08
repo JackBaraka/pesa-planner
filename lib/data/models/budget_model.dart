@@ -15,6 +15,7 @@ class Budget {
   final String currency;
   final String? description;
   final bool isRecurring;
+  final bool monthlyRollover; // Carry over unused amount to next month
   final DateTime createdAt;
   final DateTime? updatedAt;
 
@@ -30,6 +31,7 @@ class Budget {
     this.currency = 'KES',
     this.description,
     this.isRecurring = false,
+    this.monthlyRollover = false,
     required this.createdAt,
     this.updatedAt,
   });
@@ -48,6 +50,7 @@ class Budget {
       'currency': currency,
       'description': description,
       'isRecurring': isRecurring,
+      'monthlyRollover': monthlyRollover,
       'createdAt': Timestamp.fromDate(createdAt),
       'updatedAt': updatedAt != null ? Timestamp.fromDate(updatedAt!) : null,
     };
@@ -67,6 +70,7 @@ class Budget {
       currency: map['currency'] ?? 'KES',
       description: map['description'],
       isRecurring: map['isRecurring'] ?? false,
+      monthlyRollover: map['monthlyRollover'] ?? false,
       createdAt: (map['createdAt'] as Timestamp).toDate(),
       updatedAt: map['updatedAt'] != null
           ? (map['updatedAt'] as Timestamp).toDate()
@@ -87,6 +91,7 @@ class Budget {
     String? currency,
     String? description,
     bool? isRecurring,
+    bool? monthlyRollover,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) {
@@ -102,6 +107,7 @@ class Budget {
       currency: currency ?? this.currency,
       description: description ?? this.description,
       isRecurring: isRecurring ?? this.isRecurring,
+      monthlyRollover: monthlyRollover ?? this.monthlyRollover,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );
@@ -174,6 +180,20 @@ class Budget {
       case BudgetStatus.upcoming:
         return '#2196F3'; // Blue
     }
+  }
+
+  // Check if budget is over 90% spent (warning threshold)
+  bool get isWarning => progress >= 0.9 && !isExceeded;
+
+  // Check if budget is near limit (over 80%)
+  bool get isNearLimit => progress >= 0.8;
+
+  // Get progress bar color based on spending
+  String get progressColor {
+    if (isExceeded) return '#F44336'; // Red
+    if (isWarning) return '#F0A800'; // Kenya Gold (warning)
+    if (isNearLimit) return '#FFA500'; // Orange
+    return '#4CAF50'; // Green
   }
 
   // Format amount with Kenyan currency

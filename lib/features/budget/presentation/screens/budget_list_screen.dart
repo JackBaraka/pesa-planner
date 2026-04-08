@@ -86,9 +86,7 @@ class BudgetListScreen extends StatelessWidget {
                       LinearProgressIndicator(
                         value: progress,
                         backgroundColor: Colors.grey[300],
-                        color: progress > 0.8
-                            ? Colors.red
-                            : AppColors.kenyaGreen,
+                        color: _getProgressColor(budget.progressColor),
                       ),
                       const SizedBox(height: 8),
                       Row(
@@ -98,15 +96,44 @@ class BudgetListScreen extends StatelessWidget {
                             '${formatKSH(budget.spent)} / ${formatKSH(budget.amount)}',
                             style: const TextStyle(fontWeight: FontWeight.bold),
                           ),
-                          Text(
-                            '$daysLeft days left',
-                            style: TextStyle(
-                              color: daysLeft < 7 ? Colors.red : Colors.grey,
-                            ),
+                          Row(
+                            children: [
+                              if (budget.monthlyRollover)
+                                const Padding(
+                                  padding: EdgeInsets.only(right: 8),
+                                  child: Icon(
+                                    Icons.refresh,
+                                    size: 16,
+                                    color: AppColors.kenyaGold,
+                                  ),
+                                ),
+                              Text(
+                                '$daysLeft days left',
+                                style: TextStyle(
+                                  color: daysLeft < 7 ? Colors.red : Colors.grey,
+                                ),
+                              ),
+                            ],
                           ),
                         ],
                       ),
+                      if (budget.isWarning) ...[
+                        const SizedBox(height: 4),
+                        Text(
+                          '⚠️ ${budget.progressPercentage}% used - Warning!',
+                          style: TextStyle(
+                            color: AppColors.kenyaGold,
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
                     ],
+                  ),
+                  onTap: () => Navigator.pushNamed(
+                    context,
+                    '/budget-detail',
+                    arguments: budget.id,
                   ),
                   trailing: IconButton(
                     icon: const Icon(Icons.delete, color: Colors.red),
@@ -127,6 +154,21 @@ class BudgetListScreen extends StatelessWidget {
         child: const Icon(Icons.add),
       ),
     );
+  }
+
+  Color _getProgressColor(String hexColor) {
+    switch (hexColor) {
+      case '#F44336':
+        return Colors.red;
+      case '#F0A800':
+        return AppColors.kenyaGold;
+      case '#FFA500':
+        return Colors.orange;
+      case '#4CAF50':
+        return AppColors.kenyaGreen;
+      default:
+        return AppColors.kenyaGreen;
+    }
   }
 
   void _deleteBudget(BuildContext context, String userId, String budgetId) {

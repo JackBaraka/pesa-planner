@@ -20,6 +20,20 @@ class DatabaseService {
     }
   }
 
+  Future<String?> updateBudget(String userId, Budget budget) async {
+    try {
+      await _firestore
+          .collection('users')
+          .doc(userId)
+          .collection('budgets')
+          .doc(budget.id)
+          .update(budget.toMap());
+      return null; // Success
+    } catch (e) {
+      return 'Error updating budget: $e';
+    }
+  }
+
   Stream<List<Budget>> getBudgets(String userId) {
     try {
       return _firestore

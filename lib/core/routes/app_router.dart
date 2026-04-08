@@ -1,10 +1,12 @@
 ﻿// ignore_for_file: avoid_types_as_parameter_names
 
 import 'package:flutter/material.dart';
+import 'package:pesa_planner/data/models/budget_model.dart';
 import 'package:pesa_planner/features/auth/presentation/screens/login_screen.dart';
 import 'package:pesa_planner/features/auth/presentation/screens/phone_verify_screen.dart';
 import 'package:pesa_planner/features/auth/presentation/screens/register_screen.dart';
 import 'package:pesa_planner/features/budget/presentation/screens/budget_creation_screen.dart';
+import 'package:pesa_planner/features/budget/presentation/screens/budget_detail_screen.dart';
 import 'package:pesa_planner/features/budget/presentation/screens/budget_list_screen.dart';
 import 'package:pesa_planner/features/dashboard/home_screen.dart';
 import 'package:pesa_planner/features/expenses/presentation/screens/add_expense_screen.dart';
@@ -40,6 +42,19 @@ class AppRouter {
         return MaterialPageRoute(builder: (_) => const BudgetListScreen());
       case '/create-budget':
         return MaterialPageRoute(builder: (_) => const BudgetCreationScreen());
+      case '/budget-detail':
+        final budgetId = settings.arguments as String?;
+        if (budgetId == null) {
+          return MaterialPageRoute(builder: (_) => const BudgetListScreen());
+        }
+        return MaterialPageRoute(
+          builder: (_) => BudgetDetailScreen(budgetId: budgetId),
+        );
+      case '/edit-budget':
+        final budget = settings.arguments as Budget?;
+        return MaterialPageRoute(
+          builder: (_) => BudgetCreationScreen(existingBudget: budget),
+        );
 
       // Expense Routes
       case '/expenses':
