@@ -248,20 +248,29 @@ class _ExpenseListScreenState extends State<ExpenseListScreen> {
   }
 
   Icon _getCategoryIcon(String category) {
-    final color = AppColors.kenyaGreen;
     switch (category) {
       case 'Transport':
         return const Icon(Icons.directions_bus, color: Colors.blue);
       case 'Utilities':
-        return const Icon(Icons.bolt, color: Colors.amber);
+        return const Icon(Icons.lightbulb, color: Colors.amber);
       case 'M-PESA':
         return const Icon(Icons.phone_android, color: Colors.green);
       case 'Food':
-        return const Icon(Icons.fastfood, color: Colors.orange);
+        return const Icon(Icons.restaurant, color: Colors.orange);
+      case 'Airtime':
+        return const Icon(Icons.phone, color: Colors.purple);
       case 'Chama':
-        return const Icon(Icons.group, color: Colors.purple);
+        return const Icon(Icons.groups, color: Colors.teal);
+      case 'Entertainment':
+        return const Icon(Icons.movie, color: Colors.pink);
+      case 'Healthcare':
+        return const Icon(Icons.medical_services, color: Colors.red);
+      case 'Education':
+        return const Icon(Icons.school, color: Colors.indigo);
+      case 'Savings':
+        return const Icon(Icons.savings, color: Color(0xFF006600));
       default:
-        return Icon(Icons.money, color: color);
+        return const Icon(Icons.more_horiz, color: Colors.grey);
     }
   }
 }

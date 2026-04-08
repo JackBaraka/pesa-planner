@@ -8,6 +8,7 @@ class Expense {
   final String description;
   final String? subCategory; // Kenyan-specific subcategories
   final bool isRecurring;
+  final String? receiptUrl; // URL to receipt photo in Firebase Storage
 
   Expense({
     required this.id,
@@ -17,6 +18,7 @@ class Expense {
     this.description = '',
     this.subCategory,
     this.isRecurring = false,
+    this.receiptUrl,
   });
 
   // Kenyan-specific categories
@@ -54,6 +56,7 @@ class Expense {
       'subCategory': subCategory,
       'isRecurring': isRecurring,
       'currency': 'KES',
+      'receiptUrl': receiptUrl,
     };
   }
 
@@ -67,6 +70,30 @@ class Expense {
       description: map['description'] ?? '',
       subCategory: map['subCategory'],
       isRecurring: map['isRecurring'] ?? false,
+      receiptUrl: map['receiptUrl'],
+    );
+  }
+
+  // Copy with method for updates
+  Expense copyWith({
+    String? id,
+    String? category,
+    double? amount,
+    DateTime? date,
+    String? description,
+    String? subCategory,
+    bool? isRecurring,
+    String? receiptUrl,
+  }) {
+    return Expense(
+      id: id ?? this.id,
+      category: category ?? this.category,
+      amount: amount ?? this.amount,
+      date: date ?? this.date,
+      description: description ?? this.description,
+      subCategory: subCategory ?? this.subCategory,
+      isRecurring: isRecurring ?? this.isRecurring,
+      receiptUrl: receiptUrl ?? this.receiptUrl,
     );
   }
 }

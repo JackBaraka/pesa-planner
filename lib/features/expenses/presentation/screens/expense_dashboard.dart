@@ -188,10 +188,20 @@ class _ExpenseDashboardState extends State<ExpenseDashboard> {
         return Colors.green;
       case 'Food':
         return Colors.orange;
-      case 'Chama':
+      case 'Airtime':
         return Colors.purple;
+      case 'Chama':
+        return Colors.teal;
+      case 'Entertainment':
+        return Colors.pink;
+      case 'Healthcare':
+        return Colors.red;
+      case 'Education':
+        return Colors.indigo;
+      case 'Savings':
+        return const Color(0xFF006600);
       default:
-        return AppColors.kenyaGreen;
+        return Colors.grey;
     }
   }
 
@@ -200,15 +210,25 @@ class _ExpenseDashboardState extends State<ExpenseDashboard> {
       case 'Transport':
         return Icons.directions_bus;
       case 'Utilities':
-        return Icons.bolt;
+        return Icons.lightbulb;
       case 'M-PESA':
         return Icons.phone_android;
       case 'Food':
-        return Icons.fastfood;
+        return Icons.restaurant;
+      case 'Airtime':
+        return Icons.phone;
       case 'Chama':
-        return Icons.group;
+        return Icons.groups;
+      case 'Entertainment':
+        return Icons.movie;
+      case 'Healthcare':
+        return Icons.medical_services;
+      case 'Education':
+        return Icons.school;
+      case 'Savings':
+        return Icons.savings;
       default:
-        return Icons.money;
+        return Icons.more_horiz;
     }
   }
 }
