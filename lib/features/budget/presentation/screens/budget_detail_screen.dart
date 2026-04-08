@@ -137,7 +137,7 @@ class BudgetDetailScreen extends StatelessWidget {
                         const SizedBox(height: 20),
 
                         // Spending Bar
-                        _buildSpendingBar(budget),
+                        _buildSpendingBar(context, budget),
                         const SizedBox(height: 20),
 
                         // Amount Details
@@ -383,7 +383,7 @@ class BudgetDetailScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildSpendingBar(Budget budget) {
+  Widget _buildSpendingBar(BuildContext context, Budget budget) {
     final progress = budget.progress.clamp(0.0, 1.0);
     final progressColor = _getProgressColor(budget.progressColor);
 

@@ -6,7 +6,9 @@ import 'package:pesa_planner/services/database_service.dart';
 import 'package:provider/provider.dart';
 
 class BudgetCreationScreen extends StatefulWidget {
-  const BudgetCreationScreen({super.key});
+  final Budget? existingBudget;
+
+  const BudgetCreationScreen({super.key, this.existingBudget});
 
   @override
   State<BudgetCreationScreen> createState() => _BudgetCreationScreenState();
@@ -22,23 +24,17 @@ class _BudgetCreationScreenState extends State<BudgetCreationScreen> {
   DateTime _endDate = DateTime.now().add(const Duration(days: 30));
   bool _monthlyRollover = false;
 
-  // Existing budget for edit mode
-  final Budget? _existingBudget;
-
-  BudgetCreationScreen({super.key, Budget? existingBudget})
-      : _existingBudget = existingBudget;
-
   @override
   void initState() {
     super.initState();
-    if (_existingBudget != null) {
-      _nameController.text = _existingBudget!.name;
-      _amountController.text = _existingBudget!.amount.toString();
-      _descriptionController.text = _existingBudget!.description ?? '';
-      _selectedCategory = _existingBudget!.category;
-      _startDate = _existingBudget!.startDate;
-      _endDate = _existingBudget!.endDate;
-      _monthlyRollover = _existingBudget!.monthlyRollover;
+    if (widget.existingBudget != null) {
+      _nameController.text = widget.existingBudget!.name;
+      _amountController.text = widget.existingBudget!.amount.toString();
+      _descriptionController.text = widget.existingBudget!.description ?? '';
+      _selectedCategory = widget.existingBudget!.category;
+      _startDate = widget.existingBudget!.startDate;
+      _endDate = widget.existingBudget!.endDate;
+      _monthlyRollover = widget.existingBudget!.monthlyRollover;
     }
   }
 
@@ -105,7 +101,7 @@ class _BudgetCreationScreenState extends State<BudgetCreationScreen> {
     }
 
     final budget = Budget(
-      id: _existingBudget?.id ?? DateTime.now().millisecondsSinceEpoch.toString(),
+      id: widget.existingBudget?.id ?? DateTime.now().millisecondsSinceEpoch.toString(),
       name: _nameController.text.trim(),
       amount: double.parse(_amountController.text.trim()),
       category: _selectedCategory,
@@ -114,10 +110,10 @@ class _BudgetCreationScreenState extends State<BudgetCreationScreen> {
           : _descriptionController.text.trim(),
       startDate: _startDate,
       endDate: _endDate,
-      spent: _existingBudget?.spent ?? 0.0,
+      spent: widget.existingBudget?.spent ?? 0.0,
       isRecurring: _monthlyRollover,
       monthlyRollover: _monthlyRollover,
-      createdAt: _existingBudget?.createdAt ?? DateTime.now(),
+      createdAt: widget.existingBudget?.createdAt ?? DateTime.now(),
       updatedAt: DateTime.now(),
     );
 
@@ -130,7 +126,7 @@ class _BudgetCreationScreenState extends State<BudgetCreationScreen> {
       final db = Provider.of<DatabaseService>(context, listen: false);
       String? error;
 
-      if (_existingBudget != null) {
+      if (widget.existingBudget != null) {
         error = await db.updateBudget(userId, budget);
       } else {
         error = await db.addBudget(userId, budget);
@@ -152,7 +148,7 @@ class _BudgetCreationScreenState extends State<BudgetCreationScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final isEditing = _existingBudget != null;
+    final isEditing = widget.existingBudget != null;
 
     return Scaffold(
       appBar: AppBar(
